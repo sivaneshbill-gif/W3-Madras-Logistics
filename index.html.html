@@ -1,1 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W3 Madras Logistics – Waste to Wealth</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0a;
+    --surface: #111a11;
+    --surface2: #162016;
+    --border: #1e2e1e;
+    --green: #4ade80;
+    --green-dim: #22c55e;
+    --green-dark: #16a34a;
+    --green-glow: rgba(74,222,128,0.15);
+    --amber: #fbbf24;
+    --amber-dim: #f59e0b;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --text: #e8f5e8;
+    --text-muted: #6b8f6b;
+    --text-dim: #3d5c3d;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+    --body: 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 2px; }
+
+  /* ========== HEADER ========== */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,15,10,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .logo {
+    font-family: var(--sans);
+    font-size: 18px; font-weight: 800;
+    color: var(--green);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--text-muted); font-weight: 400; font-size: 12px; display: block; letter-spacing: 1px; }
+
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 11px; color: var(--green);
+    background: var(--green-glow); border: 1px solid rgba(74,222,128,0.3);
+    padding: 4px 10px; border-radius: 20px;
+  }
+  .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+  /* ========== HERO ========== */
+  .hero {
+    padding: 48px 24px 32px;
+    text-align: center;
+    background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(74,222,128,0.08) 0%, transparent 70%);
+  }
+  .hero-tag {
+    font-family: var(--mono); font-size: 11px; color: var(--green-dim);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 12px; display: inline-block;
+  }
+  .hero h1 {
+    font-family: var(--sans); font-size: clamp(28px,5vw,52px);
+    font-weight: 800; line-height: 1.1; letter-spacing: -1px;
+    color: var(--text);
+  }
+  .hero h1 em { color: var(--green); font-style: normal; }
+  .hero p {
+    margin: 14px auto 0; max-width: 540px;
+    color: var(--text-muted); font-size: 15px; line-height: 1.6;
+  }
+
+  /* ========== STATS BAR ========== */
+  .stats-bar {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 0;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    margin: 32px 0 0;
+    background: var(--surface);
+  }
+  .stat-item {
+    flex: 1; min-width: 120px; max-width: 200px;
+    padding: 16px 20px; text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-val {
+    font-family: var(--mono); font-size: 22px; font-weight: 700;
+    color: var(--green); display: block;
+  }
+  .stat-lbl { font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* ========== NAV TABS ========== */
+  .nav-tabs {
+    padding: 20px 24px;
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  }
+  .tab-btn {
+    font-family: var(--mono); font-size: 12px;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-muted); transition: all 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .tab-btn:hover, .tab-btn.active {
+    background: var(--green-glow); border-color: var(--green);
+    color: var(--green);
+  }
+  .tab-btn .icon { margin-right: 5px; }
+
+  /* ========== SECTIONS ========== */
+  section {
+    padding: 40px 24px;
+    border-top: 1px solid var(--border);
+    max-width: 1100px; margin: 0 auto;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 28px;
+  }
+  .section-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--green-glow); border: 1px solid rgba(74,222,128,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .section-title {
+    font-family: var(--sans); font-size: 22px; font-weight: 700;
+    color: var(--text);
+  }
+  .section-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ========== CARDS ========== */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+  .card-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  /* ========== FORM ELEMENTS ========== */
+  .form-group { margin-bottom: 14px; }
+  label {
+    display: block; font-size: 12px; color: var(--text-muted);
+    font-family: var(--mono); letter-spacing: 0.5px; margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  input, select, textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    color: var(--text); font-family: var(--body); font-size: 14px;
+    transition: border-color 0.2s; outline: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--green); box-shadow: 0 0 0 3px var(--green-glow);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: var(--surface2); }
+
+  /* ========== BUTTONS ========== */
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: none;
+    font-family: var(--mono); font-size: 13px; cursor: pointer;
+    transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+    font-weight: 700; letter-spacing: 0.5px;
+  }
+  .btn-primary {
+    background: var(--green); color: #0a0f0a;
+  }
+  .btn-primary:hover { background: #22c55e; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(74,222,128,0.3); }
+  .btn-outline {
+    background: transparent; color: var(--green);
+    border: 1px solid var(--green);
+  }
+  .btn-outline:hover { background: var(--green-glow); }
+  .btn-amber {
+    background: var(--amber); color: #0a0f0a;
+  }
+  .btn-amber:hover { background: var(--amber-dim); transform: translateY(-1px); }
+  .btn-red {
+    background: transparent; color: var(--red); border: 1px solid var(--red);
+  }
+  .btn-sm { padding: 7px 14px; font-size: 11px; }
+  .btn-full { width: 100%; justify-content: center; }
+
+  /* ========== BADGE ========== */
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+  }
+  .badge-green { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+  .badge-amber { background: rgba(251,191,36,0.15); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .badge-blue { background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+
+  /* ========== ACTIVITY FEED ========== */
+  .feed { display: flex; flex-direction: column; gap: 8px; }
+  .feed-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:none} }
+  .feed-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .feed-dot.green { background: var(--green); }
+  .feed-dot.amber { background: var(--amber); }
+  .feed-dot.blue { background: var(--blue); }
+  .feed-text { font-size: 13px; color: var(--text); flex: 1; }
+  .feed-time { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+
+  /* ========== MAP CONTAINER ========== */
+  .map-wrapper {
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--border); position: relative;
+    background: var(--surface2);
+  }
+  .map-wrapper iframe {
+    width: 100%; height: 380px; display: block; border: none; filter: grayscale(20%) invert(5%);
+  }
+  .map-overlay {
+    position: absolute; top: 12px; left: 12px;
+    background: rgba(10,15,10,0.92); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+  }
+  .map-overlay h4 { font-family: var(--mono); font-size: 12px; color: var(--green); margin-bottom: 6px; }
+  .map-pin { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .map-pin-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ========== PRICING TABLE ========== */
+  .price-grid {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .price-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+  .price-card h4 { font-family: var(--mono); font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+  .price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .price-label { font-size: 13px; color: var(--text); }
+  .price-val { font-family: var(--mono); font-size: 13px; color: var(--green); }
+  .price-divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+  .price-total { font-family: var(--mono); font-size: 15px; color: var(--amber); font-weight: 700; }
+
+  /* ========== COLLECTOR CARD ========== */
+  .collector-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .collector-top { display: flex; align-items: center; gap: 12px; }
+  .collector-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--green-glow); border: 2px solid rgba(74,222,128,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .collector-name { font-family: var(--sans); font-size: 15px; font-weight: 700; }
+  .collector-meta { font-size: 12px; color: var(--text-muted); }
+
+  /* ========== HUB STATUS ========== */
+  .hub-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px;
+  }
+  .hub-name { font-family: var(--sans); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .hub-location { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+  .hub-bar-wrap { margin-bottom: 10px; }
+  .hub-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .hub-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .hub-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+  .hub-bar-fill.green { background: var(--green); }
+  .hub-bar-fill.amber { background: var(--amber); }
+  .hub-bar-fill.red { background: var(--red); }
+
+  /* ========== BUYER DEMAND ========== */
+  .demand-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+  .demand-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .demand-name { font-family: var(--sans); font-size: 15px; font-weight: 700; }
+  .demand-type { font-size: 12px; color: var(--text-muted); }
+  .demand-spec { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .spec-tag {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 10px;
+    font-family: var(--mono); font-size: 11px; color: var(--text-muted);
+  }
+  .demand-progress { margin-top: 8px; }
+  .demand-progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+  .demand-progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--green-dim)); border-radius: 4px; transition: width 1s ease; }
+
+  /* ========== NOTIFICATION TOAST ========== */
+  .toast-container {
+    position: fixed; bottom: 20px; right: 20px;
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 999; pointer-events: none;
+  }
+  .toast {
+    background: var(--surface); border: 1px solid var(--green);
+    border-radius: 10px; padding: 12px 16px;
+    font-size: 13px; color: var(--text);
+    box-shadow: 0 4px 20px rgba(74,222,128,0.2);
+    pointer-events: all;
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 3.7s forwards;
+    max-width: 300px;
+  }
+  @keyframes toastIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+  @keyframes toastOut { to{opacity:0;transform:translateY(10px)} }
+  .toast-title { font-family: var(--mono); font-size: 12px; color: var(--green); margin-bottom: 3px; font-weight: 700; }
+
+  /* ========== WHATSAPP WIDGET ========== */
+  .whatsapp-widget {
+    background: #075E54; border-radius: 12px; padding: 20px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .whatsapp-header { display: flex; align-items: center; gap: 10px; }
+  .whatsapp-icon { font-size: 28px; }
+  .whatsapp-title { font-family: var(--sans); font-size: 16px; font-weight: 700; color: #fff; }
+  .whatsapp-sub { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .whatsapp-commands {
+    background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px;
+    font-family: var(--mono); font-size: 12px; color: #fff;
+  }
+  .whatsapp-commands div { margin-bottom: 6px; color: rgba(255,255,255,0.8); }
+  .whatsapp-commands strong { color: #25D366; }
+
+  /* ========== REVENUE CARDS ========== */
+  .revenue-grid {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .rev-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; text-align: center;
+  }
+  .rev-icon { font-size: 26px; margin-bottom: 8px; }
+  .rev-name { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+  .rev-amount { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--green); }
+
+  /* ========== PICKUP REQUEST LIST ========== */
+  .request-list { display: flex; flex-direction: column; gap: 10px; }
+  .request-item {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .request-icon { font-size: 24px; }
+  .request-info { flex: 1; }
+  .request-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .request-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .request-price { font-family: var(--mono); font-size: 14px; color: var(--amber); font-weight: 700; }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  /* FULL WIDTH WRAPPER */
+  .full-width-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 24px;
+  }
+  .fw-inner { max-width: 1100px; margin: 0 auto; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .stats-bar { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; }
+    .stat-item { min-width: 110px; }
+    section { padding: 30px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toasts"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    W3 Madras Logistics
+    <span>WHERE · WET · WASTE</span>
+  </div>
+  <div class="live-badge">
+    <div class="pulse"></div>
+    LIVE · CHENNAI
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">🥬 Vegetable Market Waste Platform</div>
+  <h1>Chennai's <em>Wet Waste</em><br>Logistics Platform</h1>
+  <p>Real-time waste discovery, fast pickup coordination, and feedstock supply for bio-CNG plants across Chennai district.</p>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-val" id="stat-requests">12</span>
+      <div class="stat-lbl">Active Requests</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val" id="stat-kg">4,820</span>
+      <div class="stat-lbl">kg Pending Pickup</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val" id="stat-collectors">7</span>
+      <div class="stat-lbl">Collectors Online</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val" id="stat-hubs">3</span>
+      <div class="stat-lbl">Hubs Active</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val" id="stat-tons">18.4t</span>
+      <div class="stat-lbl">Processed Today</div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <a href="#generator" class="tab-btn"><span class="icon">🏪</span>Market Generator</a>
+  <a href="#live-feed" class="tab-btn"><span class="icon">📡</span>Live Feed</a>
+  <a href="#collector" class="tab-btn"><span class="icon">🚛</span>Collector Network</a>
+  <a href="#hubs" class="tab-btn"><span class="icon">🏭</span>Aggregation Hubs</a>
+  <a href="#buyers" class="tab-btn"><span class="icon">🏢</span>Buyer Marketplace</a>
+  <a href="#pricing" class="tab-btn"><span class="icon">💰</span>Pricing Engine</a>
+  <a href="#map" class="tab-btn"><span class="icon">🗺️</span>Chennai Map</a>
+  <a href="#revenue" class="tab-btn"><span class="icon">📊</span>Revenue</a>
+</div>
+
+<!-- ============================== -->
+<!-- SECTION 1: WASTE GENERATOR     -->
+<!-- ============================== -->
+<section id="generator">
+  <div class="section-header">
+    <div class="section-icon">🏪</div>
+    <div>
+      <div class="section-title">Market Waste Generator</div>
+      <div class="section-sub">Vegetable market vendors request waste pickup</div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <!-- PICKUP REQUEST FORM -->
+    <div class="card">
+      <h3 style="font-family:var(--sans);font-size:16px;font-weight:700;margin-bottom:16px;color:var(--green)">📦 New Pickup Request</h3>
+
+      <div class="form-group">
+        <label>Market Location</label>
+        <select id="market-location" onchange="updatePrice()">
+          <option value="">Select Market</option>
+          <option value="koyambedu">Koyambedu Vegetable Market</option>
+          <option value="parrys">Parrys Corner Market</option>
+          <option value="thiruvanmiyur">Thiruvanmiyur Market</option>
+          <option value="kotturpuram">Kotturpuram Market</option>
+          <option value="pallikaranai">Pallikaranai Market</option>
+          <option value="ambattur">Ambattur Market</option>
+          <option value="tambaram">Tambaram Market</option>
+          <option value="chromepet">Chromepet Market</option>
+          <option value="velachery">Velachery Market</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Waste Type</label>
+        <select id="waste-type" onchange="updatePrice()">
+          <option value="mixed_veg">Mixed Vegetable Waste</option>
+          <option value="leafy">Leafy Greens Waste</option>
+          <option value="fruit_veg">Fruit & Vegetable Mix</option>
+          <option value="root_veg">Root Vegetable Waste</option>
+          <option value="spoiled">Spoiled / Overripe Produce</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Estimated Quantity (kg)</label>
+        <input type="range" id="qty-slider" min="50" max="2000" value="200" step="50" oninput="updateQty(this.value); updatePrice()">
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--text-muted);margin-top:4px">
+          <span>50 kg</span>
+          <span style="color:var(--green);font-weight:700" id="qty-display">200 kg</span>
+          <span>2000 kg</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Preferred Pickup Time</label>
+        <select id="pickup-time">
+          <option>Within 2 hours (Express)</option>
+          <option>Today morning (5–9 AM)</option>
+          <option>Today afternoon (12–3 PM)</option>
+          <option>Tomorrow morning</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Contamination Level</label>
+        <select id="contamination" onchange="updatePrice()">
+          <option value="low">Low – Mostly clean organic</option>
+          <option value="medium">Medium – Some plastic/debris</option>
+          <option value="high">High – Mixed with non-organic</option>
+        </select>
+      </div>
+
+      <!-- PRICE PREVIEW -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-bottom:8px;letter-spacing:1px">ESTIMATED PAYMENT</div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+          <span style="color:var(--text-muted)">Base value</span>
+          <span id="p-base" style="font-family:var(--mono);color:var(--text)">₹200</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+          <span style="color:var(--text-muted)">Quality bonus</span>
+          <span id="p-quality" style="font-family:var(--mono);color:var(--green)">+₹40</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+          <span style="color:var(--text-muted)">Demand multiplier</span>
+          <span id="p-demand" style="font-family:var(--mono);color:var(--green)">×1.2</span>
+        </div>
+        <hr class="price-divider">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-family:var(--mono);font-size:14px;color:var(--text)">You receive</span>
+          <span id="p-total" style="font-family:var(--mono);font-size:18px;color:var(--amber);font-weight:700">₹280</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="submitPickupRequest()">
+        🚛 Broadcast Pickup Request
+      </button>
+    </div>
+
+    <!-- ACTIVE REQUESTS -->
+    <div class="card">
+      <h3 style="font-family:var(--sans);font-size:16px;font-weight:700;margin-bottom:16px;color:var(--green)">📋 Active Pickup Requests</h3>
+      <div class="request-list" id="request-list">
+        <div class="request-item">
+          <div class="request-icon">🥬</div>
+          <div class="request-info">
+            <div class="request-name">Koyambedu – Mixed Veg</div>
+            <div class="request-meta">850 kg · Low contamination · <span class="badge badge-amber">Awaiting Collector</span></div>
+          </div>
+          <div class="request-price">₹1,020</div>
+        </div>
+        <div class="request-item">
+          <div class="request-icon">🍅</div>
+          <div class="request-info">
+            <div class="request-name">Parrys Corner – Spoiled</div>
+            <div class="request-meta">400 kg · Medium contamination · <span class="badge badge-green">Collector Assigned</span></div>
+          </div>
+          <div class="request-price">₹380</div>
+        </div>
+        <div class="request-item">
+          <div class="request-icon">🥕</div>
+          <div class="request-info">
+            <div class="request-name">Tambaram – Root Veg</div>
+            <div class="request-meta">620 kg · Low contamination · <span class="badge badge-blue">In Transit</span></div>
+          </div>
+          <div class="request-price">₹744</div>
+        </div>
+        <div class="request-item">
+          <div class="request-icon">🥦</div>
+          <div class="request-info">
+            <div class="request-name">Velachery – Leafy</div>
+            <div class="request-meta">300 kg · Low contamination · <span class="badge badge-amber">Awaiting Collector</span></div>
+          </div>
+          <div class="request-price">₹390</div>
+        </div>
+        <div class="request-item">
+          <div class="request-icon">🌽</div>
+          <div class="request-info">
+            <div class="request-name">Ambattur – Mixed Veg</div>
+            <div class="request-meta">500 kg · Low contamination · <span class="badge badge-green">Collector Assigned</span></div>
+          </div>
+          <div class="request-price">₹600</div>
+        </div>
+      </div>
+
+      <!-- WHATSAPP WIDGET -->
+      <div class="whatsapp-widget" style="margin-top:16px">
+        <div class="whatsapp-header">
+          <div class="whatsapp-icon">📱</div>
+          <div>
+            <div class="whatsapp-title">WhatsApp Request (Phase 1)</div>
+            <div class="whatsapp-sub">Send waste request via WhatsApp</div>
+          </div>
+        </div>
+        <div class="whatsapp-commands">
+          <div>Send to: <strong>+91 98765 00001</strong></div>
+          <div><strong>PICKUP</strong> [Market Name] [Qty in kg]</div>
+          <div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:4px">Example: PICKUP KOYAMBEDU 500</div>
+        </div>
+        <a href="https://wa.me/919876500001?text=PICKUP%20KOYAMBEDU%20500" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;padding:10px 18px;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;text-decoration:none">
+          💬 Open WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== -->
+<!-- SECTION 2: LIVE FEED           -->
+<!-- ============================== -->
+<div class="full-width-section" id="live-feed">
+  <div class="fw-inner">
+    <div class="section-header">
+      <div class="section-icon">📡</div>
+      <div>
+        <div class="section-title">Live Activity Feed</div>
+        <div class="section-sub">Real-time waste movement across Chennai</div>
+      </div>
+      <div class="live-badge" style="margin-left:auto"><div class="pulse"></div>BROADCASTING</div>
+    </div>
+    <div class="feed" id="live-feed-list">
+      <div class="feed-item">
+        <div class="feed-dot green"></div>
+        <div class="feed-text">🏪 <strong>Koyambedu Market</strong> requested pickup — 850 kg mixed vegetable waste</div>
+        <div class="feed-time">2m ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-dot amber"></div>
+        <div class="feed-text">🚛 <strong>Collector Rajan K.</strong> accepted route — Parrys → Perungudi Hub</div>
+        <div class="feed-time">5m ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-dot blue"></div>
+        <div class="feed-text">🏭 <strong>Perungudi Hub</strong> processed 1.2t — dispatched to Chennai Bio-CNG Plant</div>
+        <div class="feed-time">18m ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-dot green"></div>
+        <div class="feed-text">✅ <strong>Tambaram Market</strong> pickup completed — 620 kg root vegetables</div>
+        <div class="feed-time">31m ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-dot amber"></div>
+        <div class="feed-text">💰 <strong>₹744 payment</strong> released to Collector Suresh M.</div>
+        <div class="feed-time">31m ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-dot green"></div>
+        <div class="feed-text">🏢 <strong>Chennai Bio-CNG</strong> updated demand — 25t food waste needed today</div>
+        <div class="feed-time">45m ago</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- SECTION 3: COLLECTOR NETWORK   -->
+<!-- ============================== -->
+<section id="collector">
+  <div class="section-header">
+    <div class="section-icon">🚛</div>
+    <div>
+      <div class="section-title">Collector / Driver Network</div>
+      <div class="section-sub">Chennai-based waste collectors with active routes</div>
+    </div>
+  </div>
+
+  <div class="card-grid" style="margin-bottom:24px">
+    <!-- COLLECTOR REGISTRATION -->
+    <div class="card">
+      <h3 style="font-family:var(--sans);font-size:16px;font-weight:700;margin-bottom:16px;color:var(--green)">➕ Join as Collector</h3>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" placeholder="e.g. Murugan K.">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" placeholder="+91 XXXXX XXXXX">
+      </div>
+      <div class="form-group">
+        <label>Vehicle Type</label>
+        <select>
+          <option>Mini Truck (1–2 ton)</option>
+          <option>Tata Ace / Mahindra Jeeto</option>
+          <option>Auto Rickshaw (small loads)</option>
+          <option>Large Truck (5+ ton)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Operating Zone (Chennai)</label>
+        <select>
+          <option>North Chennai (Parrys, Perambur)</option>
+          <option>Central Chennai (T.Nagar, Kodambakkam)</option>
+          <option>South Chennai (Velachery, Tambaram)</option>
+          <option>West Chennai (Koyambedu, Ambattur)</option>
+          <option>All Zones</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Collector Type</label>
+        <select>
+          <option>Waste Aggregator (High Priority)</option>
+          <option>Self-Employed / Own Vehicle</option>
+          <option>Scrap Collector</option>
+          <option>Logistics Operator</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="showToast('Collector Registered!','Verification will be done within 2 hours.','green')">
+        ✅ Register Collector
+      </button>
+    </div>
+
+    <!-- COLLECTOR DISPATCH PANEL -->
+    <div class="card">
+      <h3 style="font-family:var(--sans);font-size:16px;font-weight:700;margin-bottom:16px;color:var(--green)">🗺️ Collector Dispatch Panel</h3>
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <div class="collector-card">
+          <div class="collector-top">
+            <div class="collector-avatar">🧑</div>
+            <div>
+              <div class="collector-name">Rajan K.</div>
+              <div class="collector-meta">Mini Truck · North Chennai</div>
+            </div>
+            <span class="badge badge-green" style="margin-left:auto">ACTIVE</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted)">Current Route: Parrys → Perungudi Hub</div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px">
+            <span style="color:var(--text-muted)">Load: 750 kg / 1200 kg</span>
+            <span style="color:var(--amber)">₹900 earned today</span>
+          </div>
+          <div class="hub-bar"><div class="hub-bar-fill amber" style="width:62%"></div></div>
+        </div>
+
+        <div class="collector-card">
+          <div class="collector-top">
+            <div class="collector-avatar">👨</div>
+            <div>
+              <div class="collector-name">Suresh M.</div>
+              <div class="collector-meta">Tata Ace · South Chennai</div>
+            </div>
+            <span class="badge badge-blue" style="margin-left:auto">IN TRANSIT</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted)">Tambaram Market → Chrompet Hub</div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px">
+            <span style="color:var(--text-muted)">Load: 620 kg / 800 kg</span>
+            <span style="color:var(--amber)">₹744 earned today</span>
+          </div>
+          <div class="hub-bar"><div class="hub-bar-fill green" style="width:77%"></div></div>
+        </div>
+
+        <div class="collector-card">
+          <div class="collector-top">
+            <div class="collector-avatar">👩</div>
+            <div>
+              <div class="collector-name">Priya S.</div>
+              <div class="collector-meta">Waste Aggregator · West Chennai</div>
+            </div>
+            <span class="badge badge-amber" style="margin-left:auto">AVAILABLE</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted)">Waiting near Koyambedu Area</div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px">
+            <span style="color:var(--text-muted)">Load: 0 kg / 2000 kg</span>
+            <span style="color:var(--green)">Ready for pickup</span>
+          </div>
+          <div class="hub-bar"><div class="hub-bar-fill green" style="width:5%"></div></div>
+        </div>
+
+        <button class="btn btn-outline btn-full" onclick="assignCollector()">
+          ⚡ Auto-Assign Best Collector
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROUTE OPTIMIZATION NOTE -->
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;gap:14px;align-items:flex-start">
+    <div style="font-size:24px">🧠</div>
+    <div>
+      <div style="font-family:var(--sans);font-size:15px;font-weight:700;margin-bottom:4px">Intelligence Engine – Auto Assignment</div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.6">
+        The system evaluates <strong style="color:var(--green)">collector proximity</strong>, <strong style="color:var(--green)">vehicle capacity</strong>, <strong style="color:var(--green)">route overlap</strong>, and <strong style="color:var(--green)">contamination risk</strong> to auto-assign the best available collector — similar to Uber's dispatch algorithm. Multi-stop route bundling maximizes efficiency.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== -->
+<!-- SECTION 4: AGGREGATION HUBS    -->
+<!-- ============================== -->
+<div class="full-width-section" id="hubs">
+  <div class="fw-inner">
+    <div class="section-header">
+      <div class="section-icon">🏭</div>
+      <div>
+        <div class="section-title">Micro Aggregation Hubs</div>
+        <div class="section-sub">3 active hubs processing Chennai vegetable market waste</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <!-- HUB 1 -->
+      <div class="hub-card">
+        <div class="hub-name">🏭 Koyambedu Hub (Phase 1)</div>
+        <div class="hub-location">📍 Near Koyambedu Mkt Complex, Chennai – 600092</div>
+        <div class="hub-bar-wrap">
+          <div class="hub-bar-label"><span>Storage Capacity</span><span style="color:var(--amber)">68% full</span></div>
+          <div class="hub-bar"><div class="hub-bar-fill amber" style="width:68%"></div></div>
+        </div>
+        <div class="hub-bar-wrap">
+          <div class="hub-bar-label"><span>Processing Rate</span><span style="color:var(--green)">Active</span></div>
+          <div class="hub-bar"><div class="hub-bar-fill green" style="width:85%"></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center">
+            <div style="font-family:var(--mono);font-size:16px;color:var(--green)">6.8t</div>
+            <div style="font-size:11px;color:var(--text-muted)">In Stock</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center">
+            <div style="font-family:var(--mono);font-size:16px;color:var(--amber)">4.2t</div>
+            <div style="font-size:11px;color:var(--text-muted)">Processed Today</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge badge-green">✅ Sorting Active</span>
+          <span class="badge badge-green">✅ Shredding</span>
+          <span class="badge badge-amber">⏳ Dewatering</span>
+        </div>
+      </div>
+
+      <!-- HUB 2 -->
+      <div class="hub-card">
+        <div class="hub-name">🏭 Perungudi Hub</div>
+        <div class="hub-location">📍 Perungudi Industrial Estate, Chennai – 600096</div>
+        <div class="hub-bar-wrap">
+          <div class="hub-bar-label"><span>Storage Capacity</span><span style="color:var(--green)">42% full</span></div>
+          <div class="hub-bar"><div class="hub-bar-fill green" style="width:42%"></div></div>
+        </div>
+        <div class="hub-bar-wrap">
+          <div class="hub-bar-label"><span>Processing Rate</span><span style="color:var(--green)">Optimal</span></div>
+          <div class="hub-bar"><div class="hub-bar-fill green" style="width:70%"></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center">
+            <div style="font-family:var(--mono);font-size:16px;color:var(--green)">4.1t</div>
+            <div style="font-size:11px;color:var(--text-muted)">In Stock</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center">
+            <div style="font-family:var(--mono);font-size:16px;color:var(--amber)">8.6t</div>
+            <div style="font-size:11px;color:var(--text-muted)">Processed Today</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge badge-green">✅ Sorting</span>
+          <span class="badge badge-green">✅ Dewatering</span>
+          <span class="badge badge-green">✅ Shredding</span>
+        </div>
+      </div>
+
+      <!-- HUB 3 -->
+      <div class="hub-card">
+        <div class="hub-name">🏭 Chrompet Hub</div>
+        <div class="hub-location">📍 Chromepet Industrial Area, Chennai – 600044</div>
+        <div class="hub-bar-wrap">
+          <div class="hub-bar-label"><span>Storage Capacity</span><span style="color:var(--red)">91% full</span></div>
+          <div class="hub-bar"><div class="hub-bar-fill red" style="width:91%"></div></div>
+        </div>
+        <div class="hub-bar-wrap">
+          <div class="hub-bar-label"><span>Processing Rate</span><span style="color:var(--amber)">Near Capacity</span></div>
+          <div class="hub-bar"><div class="hub-bar-fill amber" style="width:55%"></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center">
+            <div style="font-family:var(--mono);font-size:16px;color:var(--red)">9.2t</div>
+            <div style="font-size:11px;color:var(--text-muted)">In Stock</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center">
+            <div style="font-family:var(--mono);font-size:16px;color:var(--amber)">5.6t</div>
+            <div style="font-size:11px;color:var(--text-muted)">Processed Today</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge badge-green">✅ Sorting</span>
+          <span class="badge badge-red">⚠️ Storage Full Soon</span>
+          <span class="badge badge-green">✅ Shredding</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- SECTION 5: BUYER MARKETPLACE   -->
+<!-- ============================== -->
+<section id="buyers">
+  <div class="section-header">
+    <div class="section-icon">🏢</div>
+    <div>
+      <div class="section-title">Buyer Marketplace</div>
+      <div class="section-sub">Daily demand from bio-CNG plants, composters & biomass buyers</div>
+    </div>
+  </div>
+
+  <div class="card-grid" style="margin-bottom:20px">
+    <!-- DEMAND CARDS -->
+    <div class="demand-card">
+      <div class="demand-header">
+        <div>
+          <div class="demand-name">Chennai Bio-CNG Plant</div>
+          <div class="demand-type">📍 Manali Industrial Area</div>
+        </div>
+        <span class="badge badge-green">BUYING</span>
+      </div>
+      <div class="demand-spec">
+        <span class="spec-tag">25 tons/day</span>
+        <span class="spec-tag">Moisture &lt;70%</span>
+        <span class="spec-tag">₹1.8/kg</span>
+      </div>
+      <div class="demand-progress">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted)">
+          <span>Today's Fulfillment</span><span style="color:var(--green)">18.4t / 25t</span>
+        </div>
+        <div class="demand-progress-bar"><div class="demand-progress-fill" style="width:73%"></div></div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="showToast('Supply Routed','Nearest hub will dispatch within 3 hours.','green')">Route Supply →</button>
+    </div>
+
+    <div class="demand-card">
+      <div class="demand-header">
+        <div>
+          <div class="demand-name">Tamil Nadu Compost Co.</div>
+          <div class="demand-type">📍 Redhills, Chennai</div>
+        </div>
+        <span class="badge badge-green">BUYING</span>
+      </div>
+      <div class="demand-spec">
+        <span class="spec-tag">10 tons/day</span>
+        <span class="spec-tag">Vegetable Only</span>
+        <span class="spec-tag">₹1.2/kg</span>
+      </div>
+      <div class="demand-progress">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted)">
+          <span>Today's Fulfillment</span><span style="color:var(--amber)">6.2t / 10t</span>
+        </div>
+        <div class="demand-progress-bar"><div class="demand-progress-fill" style="width:62%"></div></div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="showToast('Supply Routed','Dispatch scheduled for 3PM.','green')">Route Supply →</button>
+    </div>
+
+    <div class="demand-card">
+      <div class="demand-header">
+        <div>
+          <div class="demand-name">GreenPower Biomass</div>
+          <div class="demand-type">📍 Ennore, North Chennai</div>
+        </div>
+        <span class="badge badge-amber">PARTIAL</span>
+      </div>
+      <div class="demand-spec">
+        <span class="spec-tag">5 tons/day</span>
+        <span class="spec-tag">Dry Biomass</span>
+        <span class="spec-tag">₹2.1/kg</span>
+      </div>
+      <div class="demand-progress">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted)">
+          <span>Today's Fulfillment</span><span style="color:var(--red)">1.8t / 5t</span>
+        </div>
+        <div class="demand-progress-bar"><div class="demand-progress-fill" style="width:36%"></div></div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="showToast('Alert Sent','Collectors notified for dry biomass pickup.','amber')">Route Supply →</button>
+    </div>
+  </div>
+
+  <!-- POST DEMAND FORM -->
+  <div class="card">
+    <h3 style="font-family:var(--sans);font-size:16px;font-weight:700;margin-bottom:16px;color:var(--green)">📝 Post Daily Demand (Buyers)</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+      <div class="form-group">
+        <label>Company Name</label>
+        <input type="text" placeholder="e.g. XYZ Bio Energy">
+      </div>
+      <div class="form-group">
+        <label>Waste Type Required</label>
+        <select>
+          <option>Mixed Vegetable Waste</option>
+          <option>Wet Organic Waste</option>
+          <option>Dry Biomass</option>
+          <option>Leafy Organic</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Daily Quantity (tons)</label>
+        <input type="number" placeholder="e.g. 20" min="1">
+      </div>
+      <div class="form-group">
+        <label>Moisture Requirement</label>
+        <select>
+          <option>Below 70% (Bio-CNG)</option>
+          <option>Below 50% (Compost)</option>
+          <option>Below 30% (Biomass)</option>
+          <option>Any</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Offer Price (₹ per kg)</label>
+        <input type="number" placeholder="e.g. 1.8" step="0.1" min="0.5">
+      </div>
+      <div class="form-group">
+        <label>Delivery Location</label>
+        <select>
+          <option>Manali Industrial</option>
+          <option>Redhills</option>
+          <option>Ennore</option>
+          <option>Perungudi</option>
+          <option>Chrompet</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="showToast('Demand Posted!','Platform will auto-match supply from nearby hubs.','green')">
+      📢 Post Demand to Platform
+    </button>
+  </div>
+</section>
+
+<!-- ============================== -->
+<!-- SECTION 6: PRICING ENGINE      -->
+<!-- ============================== -->
+<div class="full-width-section" id="pricing">
+  <div class="fw-inner">
+    <div class="section-header">
+      <div class="section-icon">💰</div>
+      <div>
+        <div class="section-title">Dynamic Pricing Engine</div>
+        <div class="section-sub">Real-time price calculation based on quality, demand & distance</div>
+      </div>
+    </div>
+
+    <div class="price-grid">
+      <div class="price-card">
+        <h4>BASE RATES (per kg)</h4>
+        <div class="price-row"><span class="price-label">Mixed Vegetable</span><span class="price-val">₹1.00</span></div>
+        <div class="price-row"><span class="price-label">Leafy Greens</span><span class="price-val">₹1.20</span></div>
+        <div class="price-row"><span class="price-label">Root Vegetables</span><span class="price-val">₹1.20</span></div>
+        <div class="price-row"><span class="price-label">Fruit/Veg Mix</span><span class="price-val">₹0.90</span></div>
+        <div class="price-row"><span class="price-label">Spoiled Produce</span><span class="price-val">₹0.60</span></div>
+      </div>
+
+      <div class="price-card">
+        <h4>QUALITY MULTIPLIERS</h4>
+        <div class="price-row"><span class="price-label">Low contamination</span><span class="price-val">×1.20 ✅</span></div>
+        <div class="price-row"><span class="price-label">Medium contamination</span><span class="price-val">×1.00</span></div>
+        <div class="price-row"><span class="price-label">High contamination</span><span class="price-val">×0.75 ⚠️</span></div>
+        <hr class="price-divider">
+        <h4 style="margin-top:8px">DEMAND MULTIPLIERS</h4>
+        <div class="price-row"><span class="price-label">High buyer demand</span><span class="price-val">×1.30 🔥</span></div>
+        <div class="price-row"><span class="price-label">Normal demand</span><span class="price-val">×1.00</span></div>
+        <div class="price-row"><span class="price-label">Low demand</span><span class="price-val">×0.85</span></div>
+      </div>
+
+      <div class="price-card">
+        <h4>LIVE PRICE CALCULATOR</h4>
+        <div class="form-group">
+          <label>Waste Type</label>
+          <select id="calc-type" onchange="calcPrice()">
+            <option value="1.00">Mixed Vegetable</option>
+            <option value="1.20">Leafy Greens</option>
+            <option value="1.20">Root Vegetables</option>
+            <option value="0.90">Fruit/Veg Mix</option>
+            <option value="0.60">Spoiled Produce</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantity (kg)</label>
+          <input type="number" id="calc-qty" value="500" oninput="calcPrice()">
+        </div>
+        <div class="form-group">
+          <label>Contamination</label>
+          <select id="calc-cont" onchange="calcPrice()">
+            <option value="1.2">Low</option>
+            <option value="1.0">Medium</option>
+            <option value="0.75">High</option>
+          </select>
+        </div>
+        <hr class="price-divider">
+        <div class="price-row">
+          <span class="price-label" style="font-weight:600">Generator receives</span>
+          <span class="price-total" id="calc-result">₹480</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Platform fee (10%) deducted from buyer side</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- SECTION 7: CHENNAI MAP         -->
+<!-- ============================== -->
+<section id="map">
+  <div class="section-header">
+    <div class="section-icon">🗺️</div>
+    <div>
+      <div class="section-title">Chennai Network Map</div>
+      <div class="section-sub">Vegetable markets, hubs & buyer plants across the district</div>
+    </div>
+  </div>
+
+  <div class="map-wrapper">
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d248849.8865!2d80.0883!3d13.0827!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5265ea4f7d3361%3A0x6e61a70b6863d433!2sChennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1678900000000!5m2!1sen!2sin"
+      allowfullscreen="" loading="lazy">
+    </iframe>
+    <div class="map-overlay">
+      <h4>📍 NETWORK NODES</h4>
+      <div class="map-pin"><div class="map-pin-dot" style="background:var(--green)"></div>Koyambedu Market (Generator)</div>
+      <div class="map-pin"><div class="map-pin-dot" style="background:var(--green)"></div>Parrys Corner Market</div>
+      <div class="map-pin"><div class="map-pin-dot" style="background:var(--green)"></div>Tambaram Market</div>
+      <div class="map-pin"><div class="map-pin-dot" style="background:var(--green)"></div>Velachery Market</div>
+      <div class="map-pin"><div class="map-pin-dot" style="background:var(--green)"></div>Ambattur Market</div>
+      <div class="map-pin"><div class="map-pin-dot" style="background:var(--amber)"></div>Koyambedu Hub (Processing)</div>
+      <div class="map-pin"><div class="map-pin-dot" style="background:var(--amber)"></div>Perungudi Hub</div>
+      <div class="map-pin"><div class="map-pin-dot" style="background:var(--amber)"></div>Chrompet Hub</div>
+      <div class="map-pin"><div class="map-pin-dot" style="background:var(--blue)"></div>Chennai Bio-CNG Plant</div>
+      <div class="map-pin"><div class="map-pin-dot" style="background:var(--blue)"></div>TN Compost Co.</div>
+    </div>
+  </div>
+
+  <!-- MARKET QUICK LIST -->
+  <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:14px;font-weight:600">Koyambedu Mkt</div>
+        <div style="font-size:12px;color:var(--text-muted)">~10–15 tonnes/day</div>
+      </div>
+      <span class="badge badge-green">ACTIVE</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:14px;font-weight:600">Parrys Corner</div>
+        <div style="font-size:12px;color:var(--text-muted)">~2–3 tonnes/day</div>
+      </div>
+      <span class="badge badge-green">ACTIVE</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:14px;font-weight:600">Tambaram Mkt</div>
+        <div style="font-size:12px;color:var(--text-muted)">~3–5 tonnes/day</div>
+      </div>
+      <span class="badge badge-amber">PARTIAL</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:14px;font-weight:600">Pallikaranai</div>
+        <div style="font-size:12px;color:var(--text-muted)">~1–2 tonnes/day</div>
+      </div>
+      <span class="badge badge-amber">ONBOARDING</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:14px;font-weight:600">Ambattur Mkt</div>
+        <div style="font-size:12px;color:var(--text-muted)">~2–4 tonnes/day</div>
+      </div>
+      <span class="badge badge-green">ACTIVE</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:14px;font-weight:600">Velachery Mkt</div>
+        <div style="font-size:12px;color:var(--text-muted)">~1–2 tonnes/day</div>
+      </div>
+      <span class="badge badge-green">ACTIVE</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== -->
+<!-- SECTION 8: REVENUE MODEL       -->
+<!-- ============================== -->
+<div class="full-width-section" id="revenue">
+  <div class="fw-inner">
+    <div class="section-header">
+      <div class="section-icon">📊</div>
+      <div>
+        <div class="section-title">Revenue & Monetization</div>
+        <div class="section-sub">W3 Madras Logistics – estimated daily earnings (Phase 1 baseline)</div>
+      </div>
+    </div>
+
+    <div class="revenue-grid">
+      <div class="rev-card">
+        <div class="rev-icon">💸</div>
+        <div class="rev-name">Transaction Fees (10%)</div>
+        <div class="rev-amount">₹3,200/day</div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-icon">🚛</div>
+        <div class="rev-name">Logistics Margin</div>
+        <div class="rev-amount">₹1,800/day</div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-icon">🏭</div>
+        <div class="rev-name">Hub Processing Fee</div>
+        <div class="rev-amount">₹2,400/day</div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-icon">🌱</div>
+        <div class="rev-name">Carbon Credits</div>
+        <div class="rev-amount">₹850/day</div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-icon">📋</div>
+        <div class="rev-name">ESG Reporting Sub.</div>
+        <div class="rev-amount">₹500/day</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;background:var(--surface);border:1px solid var(--green);border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text-muted);letter-spacing:1px">ESTIMATED DAILY PLATFORM REVENUE</div>
+        <div style="font-family:var(--mono);font-size:32px;font-weight:700;color:var(--green)">₹8,750</div>
+        <div style="font-size:12px;color:var(--text-muted)">Based on ~18 tonnes/day throughput · Phase 1 estimates</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text-muted);letter-spacing:1px">MONTHLY PROJECTION</div>
+        <div style="font-family:var(--mono);font-size:24px;font-weight:700;color:var(--amber)">₹2.6L/mo</div>
+        <div style="font-size:12px;color:var(--text-muted)">Will be refined in Phase 2 findings</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center">
+  <div style="font-family:var(--sans);font-size:18px;font-weight:800;color:var(--green);margin-bottom:4px">W3 Madras Logistics</div>
+  <div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:2px">WHERE · WET · WASTE · CHENNAI</div>
+  <div style="margin-top:12px;font-size:12px;color:var(--text-dim)">Phase 1 Platform · Vegetable Market Waste · Bio-CNG Feedstock Supply</div>
+</div>
+
+<script>
+// =================== PRICING LOGIC ===================
+function updateQty(val) {
+  document.getElementById('qty-display').textContent = val + ' kg';
+}
+
+function updatePrice() {
+  const qty = parseInt(document.getElementById('qty-slider').value) || 200;
+  const type = document.getElementById('waste-type').value;
+  const cont = document.getElementById('contamination').value;
+
+  const baseRates = {
+    mixed_veg: 1.0, leafy: 1.2, fruit_veg: 0.9,
+    root_veg: 1.2, spoiled: 0.6
+  };
+  const contMult = { low: 1.2, medium: 1.0, high: 0.75 };
+  const demandMult = 1.2;
+
+  const base = qty * (baseRates[type] || 1.0);
+  const qualBonus = base * (contMult[cont] - 1.0);
+  const total = Math.round(base * contMult[cont] * demandMult);
+
+  document.getElementById('p-base').textContent = '₹' + Math.round(base);
+  document.getElementById('p-quality').textContent = (qualBonus >= 0 ? '+' : '') + '₹' + Math.round(qualBonus);
+  document.getElementById('p-demand').textContent = '×' + demandMult;
+  document.getElementById('p-total').textContent = '₹' + total;
+}
+
+function calcPrice() {
+  const qty = parseFloat(document.getElementById('calc-qty').value) || 500;
+  const rate = parseFloat(document.getElementById('calc-type').value) || 1.0;
+  const cont = parseFloat(document.getElementById('calc-cont').value) || 1.0;
+  const result = Math.round(qty * rate * cont);
+  document.getElementById('calc-result').textContent = '₹' + result;
+}
+
+// =================== SUBMIT REQUEST ===================
+const marketNames = {
+  koyambedu: 'Koyambedu Vegetable Market',
+  parrys: 'Parrys Corner Market',
+  thiruvanmiyur: 'Thiruvanmiyur Market',
+  kotturpuram: 'Kotturpuram Market',
+  pallikaranai: 'Pallikaranai Market',
+  ambattur: 'Ambattur Market',
+  tambaram: 'Tambaram Market',
+  chromepet: 'Chromepet Market',
+  velachery: 'Velachery Market'
+};
+
+function submitPickupRequest() {
+  const loc = document.getElementById('market-location').value;
+  const qty = document.getElementById('qty-slider').value;
+  const total = document.getElementById('p-total').textContent;
+
+  if (!loc) { showToast('Error', 'Please select a market location.', 'red'); return; }
+
+  const name = marketNames[loc] || loc;
+
+  // Add to request list
+  const list = document.getElementById('request-list');
+  const icons = ['🥬','🍅','🥕','🥦','🌽','🫑','🍆','🌿'];
+  const icon = icons[Math.floor(Math.random() * icons.length)];
+  const item = document.createElement('div');
+  item.className = 'request-item';
+  item.innerHTML = `
+    <div class="request-icon">${icon}</div>
+    <div class="request-info">
+      <div class="request-name">${name}</div>
+      <div class="request-meta">${qty} kg · <span class="badge badge-amber">Broadcasting...</span></div>
+    </div>
+    <div class="request-price">${total}</div>
+  `;
+  list.prepend(item);
+
+  // Add to live feed
+  addFeedItem('green', `🏪 <strong>${name}</strong> broadcast — ${qty} kg pickup request (${total})`);
+
+  showToast('Request Broadcast! 📡', `${name} – ${qty} kg. Finding nearest collector...`, 'green');
+
+  // Simulate assignment after 3s
+  setTimeout(() => {
+    item.querySelector('.badge').className = 'badge badge-green';
+    item.querySelector('.badge').textContent = 'Collector Assigned';
+    addFeedItem('amber', `🚛 <strong>Collector auto-assigned</strong> for ${name} – en route`);
+    showToast('Collector Assigned! 🚛', 'Pickup confirmed. ETA: ~45 minutes.', 'amber');
+
+    // Update stats
+    let cur = parseInt(document.getElementById('stat-requests').textContent);
+    document.getElementById('stat-requests').textContent = cur + 1;
+  }, 3000);
+}
+
+// =================== ASSIGN COLLECTOR ===================
+function assignCollector() {
+  showToast('Auto-Assigning...', 'Intelligence engine evaluating proximity, load & route overlap.', 'blue');
+  setTimeout(() => {
+    addFeedItem('green', '🧠 <strong>Intelligence Engine</strong> assigned Priya S. to Koyambedu pickup (best match)');
+    showToast('Assigned! ✅', 'Priya S. accepted — Koyambedu route confirmed.', 'green');
+  }, 2000);
+}
+
+// =================== LIVE FEED ===================
+function addFeedItem(color, text) {
+  const feed = document.getElementById('live-feed-list');
+  const item = document.createElement('div');
+  item.className = 'feed-item';
+  item.innerHTML = `
+    <div class="feed-dot ${color}"></div>
+    <div class="feed-text">${text}</div>
+    <div class="feed-time">just now</div>
+  `;
+  feed.prepend(item);
+  // Keep max 8 items
+  while (feed.children.length > 8) feed.removeChild(feed.lastChild);
+}
+
+// =================== AUTO LIVE FEED (simulated realtime) ===================
+const autoEvents = [
+  { color: 'green', text: '🏪 <strong>Kotturpuram Market</strong> registered — first pickup request coming soon' },
+  { color: 'amber', text: '🚛 <strong>Collector Priya S.</strong> completed Koyambedu pickup — 850 kg delivered' },
+  { color: 'blue', text: '🏭 <strong>Perungudi Hub</strong> dispatched 3.5t to Chennai Bio-CNG Plant' },
+  { color: 'green', text: '💰 <strong>₹1,020 payment</strong> released — Koyambedu Market vendor' },
+  { color: 'amber', text: '📊 <strong>Demand Update</strong> — Tamil Nadu Compost Co. increased ask to 12t/day' },
+  { color: 'green', text: '🌱 <strong>Carbon credit</strong> logged — 2.3 tCO₂e offset recorded today' },
+  { color: 'blue', text: '🏪 <strong>Chromepet Market</strong> added to network — onboarding in progress' },
+];
+
+let eventIdx = 0;
+setInterval(() => {
+  const ev = autoEvents[eventIdx % autoEvents.length];
+  addFeedItem(ev.color, ev.text);
+  eventIdx++;
+
+  // Update stat randomly
+  const statEl = document.getElementById('stat-kg');
+  const cur = parseInt(statEl.textContent.replace(',', ''));
+  statEl.textContent = (cur + Math.floor(Math.random() * 50 + 10)).toLocaleString();
+}, 8000);
+
+// =================== TOAST SYSTEM ===================
+function showToast(title, msg, type) {
+  const container = document.getElementById('toasts');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  const colors = { green: 'var(--green)', amber: 'var(--amber)', red: 'var(--red)', blue: 'var(--blue)' };
+  toast.style.borderColor = colors[type] || 'var(--green)';
+  toast.innerHTML = `<div class="toast-title" style="color:${colors[type]||'var(--green)'}">${title}</div>${msg}`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 4200);
+}
+
+// =================== ACTIVE TAB HIGHLIGHT ===================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// INIT
+updatePrice();
+calcPrice();
+setTimeout(() => showToast('W3 Madras Logistics 🟢', 'Platform live — Chennai waste network active.', 'green'), 1000);
+</script>
+</body>
+</html>
 
