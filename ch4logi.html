@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CH4 Logistics – Chennai Wet Waste Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Google Sheets Database (No billing required) -->
+<script>
+  // ═══════════════════════════════════════════════════════
+  //  DATABASE: Google Sheets via Apps Script Web App
+  //  Works 100% free, no card needed.
+  //
+  //  SETUP (5 mins):
+  //  1. Go to sheets.google.com → create new sheet
+  //  2. Rename Sheet1 → "users", add Sheet2 → "activity_logs"
+  //  3. Extensions → Apps Script → paste script from README
+  //  4. Deploy → Web App → Anyone → copy URL below
+  // ═══════════════════════════════════════════════════════
+  window.SHEETS_URL = "YOUR_APPS_SCRIPT_URL_HERE";
+
+  window.dbWrite = async function(sheet, data) {
+    const row = { sheet, ...data, timestamp: new Date().toISOString() };
+    // Always save to localStorage (instant, always works)
+    const key = 'ch4_' + sheet;
+    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+    existing.unshift(row);
+    if (existing.length > 200) existing.pop();
+    localStorage.setItem(key, JSON.stringify(existing));
+    // Also send to Google Sheets if configured
+    if (window.SHEETS_URL && window.SHEETS_URL !== "YOUR_APPS_SCRIPT_URL_HERE") {
+      try {
+        const url = window.SHEETS_URL + '?action=write&sheet=' + encodeURIComponent(sheet) + '&data=' + encodeURIComponent(JSON.stringify(row));
+        fetch(url, { mode: 'no-cors' }).catch(()=>{});
+      } catch(e) {}
+    }
+    return true;
+  };
+
+  window.dbRead = function(sheet) {
+    return JSON.parse(localStorage.getItem('ch4_' + sheet) || '[]');
+  };
+
+  window.dbFind = function(sheet, email, role) {
+    return window.dbRead(sheet).find(r => r.email === email && r.role === role);
+  };
+
+  window.dbDelete = function(sheet, email) {
+    const key = 'ch4_' + sheet;
+    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+    localStorage.setItem(key, JSON.stringify(existing.filter(r => r.email !== email)));
+  };
+
+  window._dbReady = true;
+</script>
+
+<style>
+:root {
+  --bg: #f5f7f2;
+  --bg2: #eef1ea;
+  --surface: #ffffff;
+  --surface2: #f0f4ed;
+  --border: #d6ddd0;
+  --border2: #c4cebe;
+  --green: #2d7a3a;
+  --green-mid: #3a9b4b;
+  --green-light: #e8f5eb;
+  --green-xlight: #f2faf4;
+  --amber: #b45309;
+  --amber-light: #fef3c7;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --blue: #1d4ed8;
+  --blue-light: #dbeafe;
+  --text: #1a2e1a;
+  --text-mid: #3d5c3d;
+  --text-muted: #6b8a6b;
+  --text-dim: #9ab09a;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Syne', sans-serif;
+  --body: 'DM Sans', sans-serif;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.06);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--text); font-family:var(--body); min-height:100vh; }
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+/* ═══ LOGIN SCREEN ═══ */
+#login-screen {
+  position:fixed; inset:0; z-index:1000;
+  background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e8 50%, #f5f7f2 100%);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.login-box {
+  background:var(--surface); border-radius:20px;
+  box-shadow: var(--shadow-md);
+  width:100%; max-width:460px;
+  overflow:hidden;
+}
+.login-header {
+  background: linear-gradient(135deg, #2d7a3a, #3a9b4b);
+  padding:32px 32px 28px; text-align:center;
+}
+.login-logo { font-family:var(--sans); font-size:28px; font-weight:800; color:#fff; letter-spacing:-1px; }
+.login-logo span { display:block; font-size:12px; font-weight:400; color:rgba(255,255,255,0.7); letter-spacing:2px; margin-top:4px; }
+.login-body { padding:28px 32px; }
+.login-title { font-family:var(--sans); font-size:18px; font-weight:700; margin-bottom:6px; color:var(--text); }
+.login-sub { font-size:13px; color:var(--text-muted); margin-bottom:20px; }
+
+.role-cards { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px; }
+.role-card {
+  border:2px solid var(--border); border-radius:12px; padding:14px 10px;
+  text-align:center; cursor:pointer; transition:all 0.2s; background:var(--surface);
+}
+.role-card:hover { border-color:var(--green-mid); background:var(--green-xlight); }
+.role-card.selected { border-color:var(--green); background:var(--green-light); }
+.role-card .role-icon { font-size:26px; margin-bottom:6px; }
+.role-card .role-name { font-family:var(--sans); font-size:13px; font-weight:700; color:var(--text); }
+
+#login-form { display:none; }
+.form-group { margin-bottom:14px; }
+label { display:block; font-size:12px; color:var(--text-muted); font-family:var(--mono); letter-spacing:0.5px; margin-bottom:5px; text-transform:uppercase; }
+input, select, textarea {
+  width:100%; background:var(--surface2); border:1.5px solid var(--border);
+  border-radius:8px; padding:10px 14px; color:var(--text);
+  font-family:var(--body); font-size:14px; transition:border-color 0.2s; outline:none;
+}
+input:focus, select:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(45,122,58,0.1); }
+.input-error { border-color:var(--red) !important; }
+.error-msg { font-size:12px; color:var(--red); margin-top:4px; display:none; }
+
+.btn {
+  padding:10px 20px; border-radius:8px; border:none;
+  font-family:var(--mono); font-size:13px; cursor:pointer;
+  transition:all 0.2s; display:inline-flex; align-items:center;
+  justify-content:center; gap:8px; font-weight:700; letter-spacing:0.3px;
+}
+.btn-primary { background:var(--green); color:#fff; }
+.btn-primary:hover { background:var(--green-mid); transform:translateY(-1px); box-shadow:0 4px 12px rgba(45,122,58,0.3); }
+.btn-outline { background:transparent; color:var(--green); border:1.5px solid var(--green); }
+.btn-outline:hover { background:var(--green-light); }
+.btn-amber { background:var(--amber); color:#fff; }
+.btn-amber:hover { background:#92400e; }
+.btn-red-outline { background:transparent; color:var(--red); border:1.5px solid var(--red); }
+.btn-red-outline:hover { background:var(--red-light); }
+.btn-full { width:100%; }
+.btn-sm { padding:7px 14px; font-size:11px; }
+
+/* ═══ MAIN APP ═══ */
+#app { display:none; }
+
+/* HEADER */
+header {
+  position:sticky; top:0; z-index:100;
+  background:rgba(245,247,242,0.95); backdrop-filter:blur(12px);
+  border-bottom:1.5px solid var(--border);
+  padding:0 24px; display:flex; align-items:center; justify-content:space-between;
+  height:58px;
+}
+.logo { font-family:var(--sans); font-size:20px; font-weight:800; color:var(--green); letter-spacing:-0.5px; }
+.header-right { display:flex; align-items:center; gap:12px; }
+.user-chip {
+  display:flex; align-items:center; gap:8px;
+  background:var(--green-light); border:1.5px solid var(--border);
+  border-radius:20px; padding:5px 12px;
+  font-size:13px; font-weight:500; color:var(--text-mid);
+}
+.user-role-dot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+.live-badge {
+  display:flex; align-items:center; gap:5px;
+  font-family:var(--mono); font-size:11px; color:var(--green);
+  background:var(--green-light); border:1.5px solid var(--border);
+  padding:4px 10px; border-radius:20px;
+}
+.pulse { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+/* COMMON TOP STATS */
+.top-bar {
+  background: linear-gradient(135deg, #2d7a3a 0%, #3a9b4b 100%);
+  padding:24px 24px 20px;
+}
+.top-bar-inner { max-width:1100px; margin:0 auto; }
+.top-bar h1 { font-family:var(--sans); font-size:clamp(20px,3vw,28px); font-weight:800; color:#fff; letter-spacing:-0.5px; margin-bottom:4px; }
+.top-bar p { font-size:13px; color:rgba(255,255,255,0.75); margin-bottom:16px; }
+.stats-row { display:flex; flex-wrap:wrap; gap:10px; }
+.stat-pill {
+  background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25);
+  border-radius:10px; padding:10px 16px; display:flex; flex-direction:column;
+  min-width:110px;
+}
+.stat-pill-val { font-family:var(--mono); font-size:20px; font-weight:700; color:#fff; }
+.stat-pill-lbl { font-size:11px; color:rgba(255,255,255,0.7); margin-top:1px; }
+
+/* ROLE NAV */
+.role-nav {
+  background:var(--surface); border-bottom:1.5px solid var(--border);
+  padding:0 24px; display:flex; gap:2px; overflow-x:auto;
+}
+.role-nav-btn {
+  font-family:var(--mono); font-size:12px; padding:14px 16px;
+  background:transparent; border:none; border-bottom:3px solid transparent;
+  color:var(--text-muted); cursor:pointer; transition:all 0.2s; white-space:nowrap;
+}
+.role-nav-btn:hover { color:var(--green); }
+.role-nav-btn.active { color:var(--green); border-bottom-color:var(--green); font-weight:700; }
+
+/* MAIN CONTENT */
+.main-content { max-width:1100px; margin:0 auto; padding:28px 24px; }
+
+/* SECTIONS */
+.section { margin-bottom:28px; }
+.section-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.section-icon {
+  width:36px; height:36px; border-radius:10px;
+  background:var(--green-light); border:1.5px solid var(--border);
+  display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0;
+}
+.section-title { font-family:var(--sans); font-size:18px; font-weight:700; color:var(--text); }
+.section-title.bold-label { font-weight:800; color:var(--green); }
+.section-sub { font-size:12px; color:var(--text-muted); margin-top:1px; }
+
+/* CARDS */
+.card {
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:14px; padding:20px; box-shadow:var(--shadow);
+}
+.card-grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }
+
+/* BADGE */
+.badge { display:inline-block; padding:3px 10px; border-radius:20px; font-family:var(--mono); font-size:11px; font-weight:700; }
+.badge-green { background:var(--green-light); color:var(--green); border:1px solid #b6d9bc; }
+.badge-amber { background:var(--amber-light); color:var(--amber); border:1px solid #fcd34d; }
+.badge-red { background:var(--red-light); color:var(--red); border:1px solid #fca5a5; }
+.badge-blue { background:var(--blue-light); color:var(--blue); border:1px solid #93c5fd; }
+
+/* FEED */
+.feed { display:flex; flex-direction:column; gap:8px; }
+.feed-item {
+  display:flex; align-items:center; gap:12px;
+  padding:10px 14px; border-radius:10px;
+  background:var(--surface2); border:1.5px solid var(--border);
+  animation:fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:none} }
+.feed-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.feed-dot.green { background:var(--green); }
+.feed-dot.amber { background:var(--amber); }
+.feed-dot.blue { background:var(--blue); }
+.feed-text { font-size:13px; color:var(--text); flex:1; line-height:1.4; }
+.feed-time { font-family:var(--mono); font-size:11px; color:var(--text-dim); white-space:nowrap; }
+
+/* MAP */
+.map-wrapper { border-radius:14px; overflow:hidden; border:1.5px solid var(--border); position:relative; box-shadow:var(--shadow); }
+.map-wrapper iframe { width:100%; height:360px; display:block; border:none; }
+.map-overlay {
+  position:absolute; top:12px; left:12px;
+  background:rgba(255,255,255,0.96); border:1.5px solid var(--border);
+  border-radius:10px; padding:12px 16px; box-shadow:var(--shadow);
+}
+.map-overlay h4 { font-family:var(--mono); font-size:11px; color:var(--green); margin-bottom:8px; letter-spacing:1px; }
+.map-pin { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-muted); margin-bottom:4px; }
+.map-pin-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+/* BLINKING PICKUP POINT */
+@keyframes blink-pickup { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.4)} }
+.map-pin-dot.blink { animation:blink-pickup 1s infinite; }
+
+/* REQUEST ITEMS */
+.request-item {
+  background:var(--surface2); border:1.5px solid var(--border);
+  border-radius:10px; padding:14px; display:flex; align-items:center; gap:12px;
+  transition:box-shadow 0.2s;
+}
+.request-item:hover { box-shadow:var(--shadow); }
+.request-info { flex:1; }
+.request-name { font-size:14px; font-weight:600; color:var(--text); }
+.request-meta { font-size:12px; color:var(--text-muted); margin-top:2px; }
+.request-price { font-family:var(--mono); font-size:14px; color:var(--amber); font-weight:700; }
+
+/* HUB BARS */
+.hub-bar { height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+.hub-bar-fill { height:100%; border-radius:3px; transition:width 0.8s; }
+.hub-bar-fill.green { background:var(--green-mid); }
+.hub-bar-fill.amber { background:#f59e0b; }
+.hub-bar-fill.red { background:var(--red); }
+
+/* PRICE TABLE */
+.price-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); }
+.price-row:last-child { border-bottom:none; }
+.price-val { font-family:var(--mono); font-size:13px; color:var(--green); font-weight:700; }
+
+/* COLLECTOR CARD */
+.collector-card { background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:14px; }
+.collector-avatar { width:40px; height:40px; border-radius:50%; background:var(--green-light); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:17px; }
+
+/* DEMAND CARD */
+.demand-card { background:var(--surface2); border:1.5px solid var(--border); border-radius:12px; padding:16px; }
+.demand-progress-bar { height:8px; background:var(--border); border-radius:4px; overflow:hidden; margin-top:4px; }
+.demand-progress-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--green-mid)); border-radius:4px; transition:width 1s; }
+
+/* REVENUE */
+.rev-card { background:var(--surface2); border:1.5px solid var(--border); border-radius:12px; padding:16px; text-align:center; }
+.rev-amount { font-family:var(--mono); font-size:18px; font-weight:700; color:var(--green); }
+
+/* EARNING CARD */
+.earning-big { font-family:var(--mono); font-size:36px; font-weight:700; color:var(--green); }
+
+/* TOAST */
+.toast-container { position:fixed; bottom:20px; right:20px; display:flex; flex-direction:column; gap:8px; z-index:9999; pointer-events:none; }
+.toast {
+  background:var(--surface); border:1.5px solid var(--green);
+  border-radius:12px; padding:12px 16px;
+  font-size:13px; color:var(--text);
+  box-shadow:var(--shadow-md); pointer-events:all;
+  animation:toastIn 0.3s ease, toastOut 0.3s ease 3.7s forwards;
+  max-width:300px;
+}
+@keyframes toastIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+@keyframes toastOut { to{opacity:0;transform:translateY(10px)} }
+.toast-title { font-family:var(--mono); font-size:12px; color:var(--green); margin-bottom:3px; font-weight:700; }
+.toast.amber { border-color:var(--amber); }
+.toast.amber .toast-title { color:var(--amber); }
+.toast.red-t { border-color:var(--red); }
+.toast.red-t .toast-title { color:var(--red); }
+
+/* MODAL */
+.modal-backdrop {
+  position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:500;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.modal {
+  background:var(--surface); border-radius:16px; padding:28px;
+  max-width:480px; width:100%; box-shadow:var(--shadow-md);
+  animation:fadeIn 0.3s ease;
+}
+.modal h3 { font-family:var(--sans); font-size:18px; font-weight:700; margin-bottom:16px; }
+
+/* DIVIDER */
+hr { border:none; border-top:1.5px solid var(--border); margin:16px 0; }
+
+/* ACTIVITY LOG TABLE */
+.log-table { width:100%; border-collapse:collapse; font-size:13px; }
+.log-table th { text-align:left; padding:8px 12px; background:var(--surface2); color:var(--text-muted); font-family:var(--mono); font-size:11px; letter-spacing:0.5px; border-bottom:1.5px solid var(--border); }
+.log-table td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text); }
+.log-table tr:hover td { background:var(--green-xlight); }
+
+/* BUYOFUEL CARD */
+.buyofuel-card {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border:1.5px solid #86efac; border-radius:14px; padding:20px;
+  display:flex; align-items:center; gap:16px; cursor:pointer;
+  transition:all 0.2s; text-decoration:none;
+}
+.buyofuel-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+
+@media(max-width:600px) {
+  .role-cards { grid-template-columns:1fr 1fr 1fr; }
+  .login-body { padding:20px; }
+  .stats-row { gap:8px; }
+  .stat-pill { min-width:90px; }
+  header { padding:0 16px; }
+  .main-content { padding:20px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast-container" id="toasts"></div>
+
+<!-- ═══════════════════════════════ -->
+<!--          LOGIN SCREEN           -->
+<!-- ═══════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-header">
+      <div class="login-logo">
+        CH4 Logistics
+        <span>CHENNAI WET WASTE PLATFORM</span>
+      </div>
+    </div>
+    <div class="login-body">
+
+      <!-- STEP 1: ROLE SELECT -->
+      <div id="step-role">
+        <div class="login-title">Welcome 👋</div>
+        <div class="login-sub">Who are you? Select your role to continue.</div>
+        <div class="role-cards">
+          <div class="role-card" onclick="selectRole('vendor')">
+            <div class="role-icon">🏪</div>
+            <div class="role-name">Veg Vendor</div>
+          </div>
+          <div class="role-card" onclick="selectRole('collector')">
+            <div class="role-icon">🚛</div>
+            <div class="role-name">Collector</div>
+          </div>
+          <div class="role-card" onclick="selectRole('admin')">
+            <div class="role-icon">🔐</div>
+            <div class="role-name">Admin</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: REGISTRATION / LOGIN FORM -->
+      <div id="login-form">
+        <div class="login-title" id="form-title">Register as Vendor</div>
+        <div class="login-sub" id="form-sub">Enter your details to get started</div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="f-email" placeholder="yourname@email.com" oninput="clearErr('email')">
+          <div class="error-msg" id="err-email">Please enter a valid email address.</div>
+        </div>
+
+        <div class="form-group" id="phone-group">
+          <label>Phone Number</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text-muted);white-space:nowrap">+91</div>
+            <input type="tel" id="f-phone" placeholder="98765 00000" maxlength="10" oninput="clearErr('phone')">
+          </div>
+          <div class="error-msg" id="err-phone">Enter a valid 10-digit Indian mobile number.</div>
+        </div>
+
+        <div class="form-group" id="admin-pass-group" style="display:none">
+          <label>Admin Password</label>
+          <input type="password" id="f-adminpass" placeholder="Enter admin password">
+          <div class="error-msg" id="err-admin">Invalid admin credentials.</div>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="submit-btn" onclick="handleLogin()">
+          Continue →
+        </button>
+        <button class="btn btn-outline btn-full" style="margin-top:8px" onclick="backToRoles()">
+          ← Back
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ -->
+<!--           MAIN APP              -->
+<!-- ═══════════════════════════════ -->
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">CH4 Logistics</div>
+    <div class="header-right">
+      <div class="live-badge"><div class="pulse"></div>LIVE · CHENNAI</div>
+      <div class="user-chip">
+        <div class="user-role-dot"></div>
+        <span id="header-user">User</span>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- COMMON TOP BAR -->
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <h1>CH4 Logistics – Chennai's Wet Waste Platform</h1>
+      <p>Real-time waste discovery · Fast pickup · Bio-CNG feedstock supply</p>
+      <div class="stats-row">
+        <div class="stat-pill"><span class="stat-pill-val" id="stat-requests">12</span><span class="stat-pill-lbl">Active Requests</span></div>
+        <div class="stat-pill"><span class="stat-pill-val" id="stat-kg">4,820</span><span class="stat-pill-lbl">kg Pending</span></div>
+        <div class="stat-pill"><span class="stat-pill-val" id="stat-collectors">7</span><span class="stat-pill-lbl">Collectors Online</span></div>
+        <div class="stat-pill"><span class="stat-pill-val" id="stat-hubs">3</span><span class="stat-pill-lbl">Hubs Active</span></div>
+        <div class="stat-pill"><span class="stat-pill-val" id="stat-tons">18.4t</span><span class="stat-pill-lbl">Processed Today</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROLE NAVIGATION -->
+  <div class="role-nav" id="role-nav"></div>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="main-content" id="main-content"></div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════
+//   STATE
+// ══════════════════════════════════════
+let currentRole = null;
+let currentUser = null; // { email, phone, role, docId }
+const ADMIN_EMAIL = 'sivaneshbill@gmail.com';
+const ADMIN_PASS  = 'ch4admin2024'; // simple password for admin
+
+// ══════════════════════════════════════
+//   LOGIN / REGISTRATION
+// ══════════════════════════════════════
+function selectRole(role) {
+  currentRole = role;
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  const titles = { vendor:'Register as Veg Vendor', collector:'Register as Collector', admin:'Admin Login' };
+  const subs   = { vendor:'Enter your details to start requesting pickups.', collector:'Enter your details to start accepting pickups.', admin:'Admin access only.' };
+
+  document.getElementById('form-title').textContent = titles[role];
+  document.getElementById('form-sub').textContent   = subs[role];
+  document.getElementById('phone-group').style.display = role === 'admin' ? 'none' : '';
+  document.getElementById('admin-pass-group').style.display = role === 'admin' ? '' : 'none';
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('step-role').style.display  = 'none';
+}
+
+function backToRoles() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('step-role').style.display  = '';
+  currentRole = null;
+}
+
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePhone(phone) {
+  return /^[6-9]\d{9}$/.test(phone);
+}
+
+function clearErr(field) {
+  document.getElementById('err-' + field).style.display = 'none';
+  document.getElementById('f-' + (field === 'phone' ? 'phone' : 'email')).classList.remove('input-error');
+}
+
+async function handleLogin() {
+  const email = document.getElementById('f-email').value.trim().toLowerCase();
+  let valid = true;
+
+  if (!validateEmail(email)) {
+    document.getElementById('err-email').style.display = 'block';
+    document.getElementById('f-email').classList.add('input-error');
+    valid = false;
+  }
+
+  if (currentRole === 'admin') {
+    const pass = document.getElementById('f-adminpass').value;
+    if (email !== ADMIN_EMAIL || pass !== ADMIN_PASS) {
+      document.getElementById('err-admin').style.display = 'block';
+      return;
+    }
+    currentUser = { email, role:'admin', name:'Admin' };
+    enterApp();
+    return;
+  }
+
+  const phone = document.getElementById('f-phone').value.trim();
+  if (!validatePhone(phone)) {
+    document.getElementById('err-phone').style.display = 'block';
+    document.getElementById('f-phone').classList.add('input-error');
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  // Save to database
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Registering...'; btn.disabled = true;
+
+  try {
+    const existing = window.dbFind('users', email, currentRole);
+    if (existing) {
+      showToast('Welcome back! 👋', 'Logged in as ' + email, 'green');
+    } else {
+      await window.dbWrite('users', { email, phone: '+91' + phone, role: currentRole, active: true });
+      await window.dbWrite('activity_logs', { type:'registration', role:currentRole, email, phone:'+91'+phone, detail:'New ' + currentRole + ' registered' });
+      showToast('Registered! ✅', 'Welcome to CH4 Logistics.', 'green');
+    }
+    currentUser = { email, phone:'+91'+phone, role:currentRole };
+  } catch(e) {
+    currentUser = { email, phone:'+91'+phone, role:currentRole };
+    showToast('Saved! ✅', 'Registration complete.', 'green');
+  }
+
+  btn.textContent = 'Continue →'; btn.disabled = false;
+  enterApp();
+}
+
+function enterApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('header-user').textContent = currentUser.email + ' · ' + currentUser.role.toUpperCase();
+  renderInterface();
+  startLiveFeed();
+}
+
+function logout() {
+  if(confirm('Are you sure you want to logout?')) {
+    currentUser = null; currentRole = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('step-role').style.display = '';
+    document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
+  }
+}
+
+// ══════════════════════════════════════
+//   RENDER INTERFACE BY ROLE
+// ══════════════════════════════════════
+function renderInterface() {
+  const role = currentUser.role;
+
+  const navConfigs = {
+    vendor: [
+      { id:'pickup',   label:'📦 Send Pickup Request' },
+      { id:'map',      label:'🗺️ Chennai Map' },
+      { id:'buyer',    label:'🏢 Buyer Marketplace' },
+    ],
+    collector: [
+      { id:'earnings', label:'💰 Earning Dashboard' },
+      { id:'map',      label:'🗺️ Chennai Map' },
+      { id:'hubs',     label:'🏭 Aggregation Hubs' },
+      { id:'buyer',    label:'🏢 Buyer Marketplace' },
+    ],
+    admin: [
+      { id:'feed',     label:'📡 Live Activity Feed' },
+      { id:'map',      label:'🗺️ Chennai Map' },
+      { id:'pricing',  label:'💰 Pricing Engine' },
+      { id:'revenue',  label:'📊 Revenue' },
+      { id:'logs',     label:'🗂️ Activity Logs' },
+      { id:'buyer',    label:'🏢 Buyer Marketplace' },
+    ]
+  };
+
+  // Build nav
+  const nav = document.getElementById('role-nav');
+  nav.innerHTML = '';
+  navConfigs[role].forEach((item, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'role-nav-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = item.label;
+    btn.onclick = () => {
+      document.querySelectorAll('.role-nav-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      showSection(item.id);
+    };
+    nav.appendChild(btn);
+  });
+
+  // Show first section
+  showSection(navConfigs[role][0].id);
+}
+
+function showSection(id) {
+  const mc = document.getElementById('main-content');
+  mc.innerHTML = '';
+
+  const renderers = {
+    pickup:   renderPickup,
+    map:      renderMap,
+    buyer:    renderBuyer,
+    earnings: renderEarnings,
+    hubs:     renderHubs,
+    feed:     renderFeed,
+    pricing:  renderPricing,
+    revenue:  renderRevenue,
+    logs:     renderLogs,
+  };
+
+  if (renderers[id]) renderers[id](mc);
+}
+
+// ══════════════════════════════════════
+//   SECTION RENDERERS
+// ══════════════════════════════════════
+
+// ── PICKUP (Vendor) ──
+function renderPickup(mc) {
+  mc.innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📦</div>
+      <div><div class="section-title">Send Pickup Request</div><div class="section-sub">Broadcast your waste pickup to nearby collectors</div></div>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="form-group">
+          <label>Market Location</label>
+          <select id="v-market">
+            <option value="">Select Market</option>
+            <option>Koyambedu Vegetable Market</option>
+            <option>Parrys Corner Market</option>
+            <option>Tambaram Market</option>
+            <option>Velachery Market</option>
+            <option>Ambattur Market</option>
+            <option>Pallikaranai Market</option>
+            <option>Chromepet Market</option>
+            <option>Kotturpuram Market</option>
+            <option>Thiruvanmiyur Market</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Waste Type</label>
+          <select id="v-type" onchange="calcVendorPrice()">
+            <option value="1.0">Mixed Vegetable Waste</option>
+            <option value="1.2">Leafy Greens Waste</option>
+            <option value="1.2">Root Vegetable Waste</option>
+            <option value="0.9">Fruit & Vegetable Mix</option>
+            <option value="0.6">Spoiled / Overripe Produce</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantity (kg) — <span id="v-qty-lbl" style="color:var(--green);font-weight:700">200 kg</span></label>
+          <input type="range" id="v-qty" min="50" max="2000" value="200" step="50" oninput="document.getElementById('v-qty-lbl').textContent=this.value+' kg';calcVendorPrice()">
+        </div>
+        <div class="form-group">
+          <label>Contamination Level</label>
+          <select id="v-cont" onchange="calcVendorPrice()">
+            <option value="1.2">Low – Mostly clean organic</option>
+            <option value="1.0">Medium – Some plastic/debris</option>
+            <option value="0.75">High – Mixed with non-organic</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pickup Time</label>
+          <select>
+            <option>Within 2 hours (Express)</option>
+            <option>Today morning (5–9 AM)</option>
+            <option>Today afternoon (12–3 PM)</option>
+            <option>Tomorrow morning</option>
+          </select>
+        </div>
+        <div style="background:var(--green-xlight);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-bottom:8px;letter-spacing:1px">ESTIMATED PAYMENT TO YOU</div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text-muted)">Base value</span><span id="vp-base" style="font-family:var(--mono);color:var(--text)">₹200</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text-muted)">Quality bonus</span><span id="vp-qual" style="font-family:var(--mono);color:var(--green)">+₹40</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text-muted)">Demand boost</span><span id="vp-dem" style="font-family:var(--mono);color:var(--green)">×1.2</span></div>
+          <hr>
+          <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--mono);font-size:14px;font-weight:700">You receive</span><span id="vp-total" style="font-family:var(--mono);font-size:20px;color:var(--amber);font-weight:700">₹288</span></div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="submitVendorPickup()">🚛 Broadcast Pickup Request</button>
+      </div>
+
+      <div class="card">
+        <div style="font-family:var(--sans);font-size:15px;font-weight:700;margin-bottom:14px;color:var(--green)">📋 Your Active Requests</div>
+        <div id="vendor-requests" style="display:flex;flex-direction:column;gap:8px">
+          <div class="request-item">
+            <div style="font-size:22px">🥬</div>
+            <div class="request-info"><div class="request-name">Koyambedu – Mixed Veg</div><div class="request-meta">850 kg · <span class="badge badge-amber">Awaiting Collector</span></div></div>
+            <div class="request-price">₹1,020</div>
+          </div>
+          <div class="request-item">
+            <div style="font-size:22px">🥕</div>
+            <div class="request-info"><div class="request-name">Tambaram – Root Veg</div><div class="request-meta">620 kg · <span class="badge badge-blue">In Transit</span></div></div>
+            <div class="request-price">₹744</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:14px">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--green);font-weight:700;margin-bottom:6px">📍 LIVE COLLECTOR TRACKING</div>
+          <div style="font-size:13px;color:var(--text-muted)">Collector <strong style="color:var(--text)">Suresh M.</strong> is <strong style="color:var(--green)">on the way</strong> — ETA 23 mins</div>
+          <div style="margin-top:8px;background:var(--border);border-radius:4px;height:6px;overflow:hidden">
+            <div style="background:var(--green);height:100%;width:65%;border-radius:4px;animation:progress 2s ease-in-out infinite alternate"></div>
+          </div>
+          <style>@keyframes progress{from{width:60%}to{width:75%}}</style>
+        </div>
+
+        <div style="margin-top:14px">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-bottom:8px;letter-spacing:1px">AUTO-ASSIGN NEARBY COLLECTOR</div>
+          <button class="btn btn-outline btn-full" onclick="autoAssign()">⚡ Find & Assign Nearest Collector</button>
+        </div>
+
+        <div style="margin-top:14px;padding:14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-bottom:8px">WHATSAPP SHORTCUT</div>
+          <a href="https://wa.me/919876500001?text=PICKUP%20KOYAMBEDU%20500" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;padding:10px 18px;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;text-decoration:none">💬 Send via WhatsApp</a>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px">Send: PICKUP [Market] [kg] to +91 98765 00001</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  calcVendorPrice();
+}
+
+function calcVendorPrice() {
+  const qty  = parseInt(document.getElementById('v-qty')?.value || 200);
+  const rate = parseFloat(document.getElementById('v-type')?.value || 1.0);
+  const cont = parseFloat(document.getElementById('v-cont')?.value || 1.2);
+  const dem  = 1.2;
+  const base = qty * rate;
+  const qual = base * (cont - 1.0);
+  const total = Math.round(base * cont * dem);
+  if (document.getElementById('vp-base')) {
+    document.getElementById('vp-base').textContent = '₹' + Math.round(base);
+    document.getElementById('vp-qual').textContent = (qual >= 0 ? '+' : '') + '₹' + Math.round(qual);
+    document.getElementById('vp-dem').textContent  = '×' + dem;
+    document.getElementById('vp-total').textContent = '₹' + total;
+  }
+}
+
+function submitVendorPickup() {
+  const market = document.getElementById('v-market').value;
+  if (!market) { showToast('Error','Select a market first.','red'); return; }
+  const qty   = document.getElementById('v-qty').value;
+  const total = document.getElementById('vp-total').textContent;
+  const icons = ['🥬','🍅','🥕','🥦','🌽','🫑'];
+  const icon  = icons[Math.floor(Math.random()*icons.length)];
+  const list  = document.getElementById('vendor-requests');
+  const item  = document.createElement('div');
+  item.className = 'request-item';
+  item.innerHTML = `<div style="font-size:22px">${icon}</div><div class="request-info"><div class="request-name">${market}</div><div class="request-meta">${qty} kg · <span class="badge badge-amber">Broadcasting...</span></div></div><div class="request-price">${total}</div>`;
+  list.prepend(item);
+  showToast('Broadcast Sent! 📡', market + ' – ' + qty + 'kg. Finding collector…', 'green');
+  setTimeout(() => { item.querySelector('.badge').className='badge badge-green'; item.querySelector('.badge').textContent='Collector Assigned'; showToast('Collector Assigned 🚛','ETA ~40 minutes.','green'); }, 3000);
+  logActivity('pickup_request', `${market} – ${qty}kg, est. ${total}`);
+}
+
+function autoAssign() {
+  showToast('Searching...','Intelligence engine scanning nearby collectors.','amber');
+  setTimeout(() => showToast('Assigned! ✅','Priya S. (Waste Aggregator) assigned — 2.4km away.','green'), 2000);
+}
+
+// ── MAP ──
+function renderMap(mc) {
+  const role = currentUser.role;
+  const isAdmin = role === 'admin';
+  const isCollector = role === 'collector';
+
+  mc.innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🗺️</div>
+      <div>
+        <div class="section-title">Chennai Network Map</div>
+        <div class="section-sub">Markets · Aggregation Hubs · Bio-CNG Plants</div>
+      </div>
+    </div>
+    <div class="map-wrapper">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d248849.8865!2d80.0883!3d13.0827!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5265ea4f7d3361%3A0x6e61a70b6863d433!2sChennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1678900000000!5m2!1sen!2sin" allowfullscreen loading="lazy"></iframe>
+      <div class="map-overlay">
+        <h4>📍 NETWORK NODES</h4>
+        ${!isAdmin ? `<div class="map-pin"><div class="map-pin-dot" style="background:#2d7a3a"></div>Koyambedu Market</div>
+        <div class="map-pin"><div class="map-pin-dot" style="background:#2d7a3a"></div>Parrys Corner Market</div>
+        <div class="map-pin"><div class="map-pin-dot" style="background:#2d7a3a"></div>Tambaram Market</div>
+        <div class="map-pin"><div class="map-pin-dot" style="background:#2d7a3a"></div>Velachery Market</div>
+        <div class="map-pin"><div class="map-pin-dot" style="background:#2d7a3a"></div>Ambattur Market</div>` : ''}
+        <div class="map-pin"><div class="map-pin-dot" style="background:#f59e0b"></div><strong>Koyambedu Hub</strong></div>
+        <div class="map-pin"><div class="map-pin-dot" style="background:#f59e0b"></div><strong>Perungudi Hub</strong></div>
+        <div class="map-pin"><div class="map-pin-dot" style="background:#f59e0b"></div><strong>Chrompet Hub</strong></div>
+        ${isAdmin ? `<div class="map-pin"><div class="map-pin-dot" style="background:#1d4ed8"></div><strong>Chennai Bio-CNG Plant</strong></div>
+        <div class="map-pin"><div class="map-pin-dot" style="background:#1d4ed8"></div><strong>TN Compost Co.</strong></div>
+        <div class="map-pin"><div class="map-pin-dot" style="background:#1d4ed8"></div><strong>GreenPower Biomass</strong></div>` : ''}
+        ${isCollector ? `<div class="map-pin"><div class="map-pin-dot blink" style="background:#dc2626"></div><span style="color:#dc2626;font-weight:700">Active Pickup Point</span></div>` : ''}
+      </div>
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px">
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:14px"><strong>Koyambedu Hub</strong></div><div style="font-size:12px;color:var(--text-muted)">68% capacity</div></div><span class="badge badge-amber">ACTIVE</span></div>
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:14px"><strong>Perungudi Hub</strong></div><div style="font-size:12px;color:var(--text-muted)">42% capacity</div></div><span class="badge badge-green">ACTIVE</span></div>
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:14px"><strong>Chrompet Hub</strong></div><div style="font-size:12px;color:var(--text-muted)">91% — near full</div></div><span class="badge badge-red">⚠ FULL</span></div>
+      ${isAdmin || isCollector ? `<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:14px"><strong>Chennai Bio-CNG Plant</strong></div><div style="font-size:12px;color:var(--text-muted)">Manali Industrial</div></div><span class="badge badge-blue">BUYER</span></div>` : ''}
+    </div>
+  </div>`;
+}
+
+// ── BUYER MARKETPLACE ──
+function renderBuyer(mc) {
+  mc.innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🏢</div>
+      <div><div class="section-title">Buyer Marketplace</div><div class="section-sub">Daily demand from bio-CNG plants, composters & biomass buyers</div></div>
+    </div>
+    <a href="https://buyofuel.com/" target="_blank" class="buyofuel-card" style="margin-bottom:16px;display:flex">
+      <div style="font-size:36px">⛽</div>
+      <div>
+        <div style="font-family:var(--sans);font-size:16px;font-weight:800;color:var(--green)">Buyofuel Marketplace</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:2px">Browse fuel buyers, demand listings, and feedstock contracts on Buyofuel →</div>
+      </div>
+      <div style="margin-left:auto;font-size:22px;align-self:center">↗</div>
+    </a>
+    <div class="card-grid">
+      <div class="demand-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div><div style="font-family:var(--sans);font-size:15px;font-weight:700">Chennai Bio-CNG Plant</div><div style="font-size:12px;color:var(--text-muted)">📍 Manali Industrial Area</div></div>
+          <span class="badge badge-green">BUYING</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--text-muted)">25 tons/day</span>
+          <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--text-muted)">Moisture &lt;70%</span>
+          <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--text-muted)">₹1.8/kg</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted)"><span>Today's Fulfillment</span><span style="color:var(--green)">18.4t / 25t</span></div>
+        <div class="demand-progress-bar"><div class="demand-progress-fill" style="width:73%"></div></div>
+        <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="showToast('Supply Routed','Nearest hub dispatching within 3 hours.','green')">Route Supply →</button>
+      </div>
+      <div class="demand-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div><div style="font-family:var(--sans);font-size:15px;font-weight:700">Tamil Nadu Compost Co.</div><div style="font-size:12px;color:var(--text-muted)">📍 Redhills, Chennai</div></div>
+          <span class="badge badge-green">BUYING</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--text-muted)">10 tons/day</span>
+          <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--text-muted)">Vegetable Only</span>
+          <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--text-muted)">₹1.2/kg</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted)"><span>Today's Fulfillment</span><span style="color:var(--amber)">6.2t / 10t</span></div>
+        <div class="demand-progress-bar"><div class="demand-progress-fill" style="width:62%"></div></div>
+        <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="showToast('Supply Routed','Dispatch scheduled for 3PM.','green')">Route Supply →</button>
+      </div>
+      <div class="demand-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div><div style="font-family:var(--sans);font-size:15px;font-weight:700">GreenPower Biomass</div><div style="font-size:12px;color:var(--text-muted)">📍 Ennore, North Chennai</div></div>
+          <span class="badge badge-amber">PARTIAL</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--text-muted)">5 tons/day</span>
+          <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--text-muted)">Dry Biomass</span>
+          <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--text-muted)">₹2.1/kg</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted)"><span>Today's Fulfillment</span><span style="color:var(--red)">1.8t / 5t</span></div>
+        <div class="demand-progress-bar"><div class="demand-progress-fill" style="width:36%"></div></div>
+        <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="showToast('Alert Sent','Collectors notified for dry biomass.','amber')">Route Supply →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── COLLECTOR EARNINGS ──
+function renderEarnings(mc) {
+  mc.innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">💰</div>
+      <div><div class="section-title">Collector Earning Dashboard</div><div class="section-sub">Your pickups, routes & payments</div></div>
+    </div>
+    <div class="card-grid">
+      <div class="card" style="text-align:center;padding:28px">
+        <div style="font-size:12px;font-family:var(--mono);color:var(--text-muted);letter-spacing:1px;margin-bottom:8px">TODAY'S EARNINGS</div>
+        <div class="earning-big">₹1,644</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">3 pickups completed</div>
+        <hr>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+          <div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text)">1,970 kg</div><div style="font-size:11px;color:var(--text-muted)">Total Collected</div></div>
+          <div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green)">₹48,200</div><div style="font-size:11px;color:var(--text-muted)">This Month</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--sans);font-size:15px;font-weight:700;margin-bottom:12px;color:var(--green)">📋 Today's Pickups</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="request-item"><div style="font-size:22px">✅</div><div class="request-info"><div class="request-name">Tambaram – Root Veg</div><div class="request-meta">620 kg · Delivered to Chrompet Hub</div></div><div class="request-price">₹744</div></div>
+          <div class="request-item"><div style="font-size:22px">✅</div><div class="request-info"><div class="request-name">Velachery – Leafy</div><div class="request-meta">300 kg · Delivered to Perungudi Hub</div></div><div class="request-price">₹360</div></div>
+          <div class="request-item"><div style="font-size:22px">🔄</div><div class="request-info"><div class="request-name">Parrys – Mixed Veg</div><div class="request-meta">400 kg · In Transit to Perungudi</div></div><div class="request-price">₹480</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:24px">
+      <div class="section-header">
+        <div class="section-icon">📍</div>
+        <div><div class="section-title">Nearby Pickup Requests</div><div class="section-sub">Auto-matched based on your location</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="request-item" style="border-color:#f59e0b">
+          <div style="font-size:22px">🥬</div>
+          <div class="request-info"><div class="request-name">Koyambedu – Mixed Veg</div><div class="request-meta">850 kg · 1.2 km away · <span class="badge badge-amber" style="animation:blink-pickup 1s infinite">NEW REQUEST</span></div></div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="request-price">₹1,020</div><button class="btn btn-primary btn-sm" onclick="acceptPickup()">Accept</button></div>
+        </div>
+        <div class="request-item">
+          <div style="font-size:22px">🍅</div>
+          <div class="request-info"><div class="request-name">Ambattur – Mixed Veg</div><div class="request-meta">500 kg · 3.8 km away</div></div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="request-price">₹600</div><button class="btn btn-outline btn-sm" onclick="acceptPickup()">Accept</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div style="font-family:var(--sans);font-size:15px;font-weight:700;margin-bottom:10px">⚙️ Account</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="showToast('Profile','Account details saved.','green')">Edit Profile</button>
+        <button class="btn btn-red-outline btn-sm" onclick="deleteAccount()">🗑 Delete Account</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function acceptPickup() {
+  showToast('Pickup Accepted! 🚛','Navigate to pickup point. Hub assigned automatically.','green');
+  logActivity('pickup_accepted','Collector accepted Koyambedu pickup');
+}
+
+// ── HUBS ──
+function renderHubs(mc) {
+  mc.innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🏭</div>
+      <div><div class="section-title">Micro Aggregation Hubs</div><div class="section-sub">Processing centres across Chennai</div></div>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div style="font-family:var(--sans);font-size:16px;font-weight:800;margin-bottom:4px">🏭 Koyambedu Hub</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">📍 Near Koyambedu Mkt Complex – 600092</div>
+        <div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:4px"><span>Storage</span><span style="color:var(--amber)">68%</span></div><div class="hub-bar"><div class="hub-bar-fill amber" style="width:68%"></div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-family:var(--mono);font-size:16px;color:var(--green);font-weight:700">6.8t</div><div style="font-size:11px;color:var(--text-muted)">In Stock</div></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-family:var(--mono);font-size:16px;color:var(--amber);font-weight:700">4.2t</div><div style="font-size:11px;color:var(--text-muted)">Processed</div></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><span class="badge badge-green">✅ Sorting</span><span class="badge badge-green">✅ Shredding</span><span class="badge badge-amber">⏳ Dewatering</span></div>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--sans);font-size:16px;font-weight:800;margin-bottom:4px">🏭 Perungudi Hub</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">📍 Perungudi Industrial Estate – 600096</div>
+        <div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:4px"><span>Storage</span><span style="color:var(--green)">42%</span></div><div class="hub-bar"><div class="hub-bar-fill green" style="width:42%"></div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-family:var(--mono);font-size:16px;color:var(--green);font-weight:700">4.1t</div><div style="font-size:11px;color:var(--text-muted)">In Stock</div></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-family:var(--mono);font-size:16px;color:var(--amber);font-weight:700">8.6t</div><div style="font-size:11px;color:var(--text-muted)">Processed</div></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><span class="badge badge-green">✅ Sorting</span><span class="badge badge-green">✅ Dewatering</span><span class="badge badge-green">✅ Shredding</span></div>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--sans);font-size:16px;font-weight:800;margin-bottom:4px">🏭 Chrompet Hub</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">📍 Chromepet Industrial Area – 600044</div>
+        <div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:4px"><span>Storage</span><span style="color:var(--red)">91% — near full</span></div><div class="hub-bar"><div class="hub-bar-fill red" style="width:91%"></div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-family:var(--mono);font-size:16px;color:var(--red);font-weight:700">9.2t</div><div style="font-size:11px;color:var(--text-muted)">In Stock</div></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-family:var(--mono);font-size:16px;color:var(--amber);font-weight:700">5.6t</div><div style="font-size:11px;color:var(--text-muted)">Processed</div></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><span class="badge badge-green">✅ Sorting</span><span class="badge badge-red">⚠ Near Capacity</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── ADMIN FEED ──
+function renderFeed(mc) {
+  mc.innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📡</div>
+      <div><div class="section-title">Live Activity Feed <span style="font-size:12px;color:var(--red);font-weight:600">— Admin Only</span></div><div class="section-sub">Real-time waste movement across Chennai</div></div>
+      <div class="live-badge" style="margin-left:auto"><div class="pulse"></div>LIVE</div>
+    </div>
+    <div class="feed" id="admin-feed">
+      <div class="feed-item"><div class="feed-dot green"></div><div class="feed-text">🏪 <strong>Koyambedu Market</strong> requested pickup — 850 kg mixed vegetable waste</div><div class="feed-time">2m ago</div></div>
+      <div class="feed-item"><div class="feed-dot amber"></div><div class="feed-text">🚛 <strong>Collector Rajan K.</strong> accepted route — Parrys → Perungudi Hub</div><div class="feed-time">5m ago</div></div>
+      <div class="feed-item"><div class="feed-dot blue"></div><div class="feed-text">🏭 <strong>Perungudi Hub</strong> processed 1.2t — dispatched to Chennai Bio-CNG Plant</div><div class="feed-time">18m ago</div></div>
+      <div class="feed-item"><div class="feed-dot green"></div><div class="feed-text">✅ <strong>Tambaram Market</strong> pickup completed — 620 kg root vegetables</div><div class="feed-time">31m ago</div></div>
+      <div class="feed-item"><div class="feed-dot amber"></div><div class="feed-text">💰 <strong>₹744 payment</strong> released to Collector Suresh M.</div><div class="feed-time">31m ago</div></div>
+    </div>
+  </div>`;
+}
+
+// ── ADMIN PRICING ──
+function renderPricing(mc) {
+  mc.innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">💰</div>
+      <div><div class="section-title">Dynamic Pricing Engine</div><div class="section-sub">Manage base rates, quality bonuses and demand multipliers</div></div>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text-muted);letter-spacing:1px;margin-bottom:12px">BASE RATES (₹/kg)</div>
+        <div class="price-row"><span>Mixed Vegetable</span><span class="price-val">₹1.00</span></div>
+        <div class="price-row"><span>Leafy Greens</span><span class="price-val">₹1.20</span></div>
+        <div class="price-row"><span>Root Vegetables</span><span class="price-val">₹1.20</span></div>
+        <div class="price-row"><span>Fruit/Veg Mix</span><span class="price-val">₹0.90</span></div>
+        <div class="price-row"><span>Spoiled Produce</span><span class="price-val">₹0.60</span></div>
+        <hr>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text-muted);letter-spacing:1px;margin-bottom:10px">QUALITY MULTIPLIERS</div>
+        <div class="price-row"><span>Low contamination</span><span class="price-val">×1.20 ✅</span></div>
+        <div class="price-row"><span>Medium</span><span class="price-val">×1.00</span></div>
+        <div class="price-row"><span>High contamination</span><span class="price-val">×0.75 ⚠️</span></div>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text-muted);letter-spacing:1px;margin-bottom:12px">LIVE PRICE CALCULATOR</div>
+        <div class="form-group"><label>Waste Type</label><select id="c-type" onchange="adminCalc()"><option value="1.0">Mixed Veg</option><option value="1.2">Leafy</option><option value="1.2">Root Veg</option><option value="0.9">Fruit Mix</option><option value="0.6">Spoiled</option></select></div>
+        <div class="form-group"><label>Quantity (kg)</label><input type="number" id="c-qty" value="500" oninput="adminCalc()"></div>
+        <div class="form-group"><label>Contamination</label><select id="c-cont" onchange="adminCalc()"><option value="1.2">Low</option><option value="1.0">Medium</option><option value="0.75">High</option></select></div>
+        <div class="form-group"><label>Demand Multiplier</label><select id="c-dem" onchange="adminCalc()"><option value="1.3">High ×1.3</option><option value="1.2" selected>Normal ×1.2</option><option value="0.85">Low ×0.85</option></select></div>
+        <div style="background:var(--green-xlight);border:1.5px solid var(--border);border-radius:10px;padding:14px">
+          <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--mono);font-size:13px">Generator receives</span><span id="c-result" style="font-family:var(--mono);font-size:20px;color:var(--amber);font-weight:700">₹600</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  adminCalc();
+}
+
+function adminCalc() {
+  const qty  = parseFloat(document.getElementById('c-qty')?.value || 500);
+  const rate = parseFloat(document.getElementById('c-type')?.value || 1.0);
+  const cont = parseFloat(document.getElementById('c-cont')?.value || 1.2);
+  const dem  = parseFloat(document.getElementById('c-dem')?.value || 1.2);
+  const result = Math.round(qty * rate * cont * dem);
+  if (document.getElementById('c-result')) document.getElementById('c-result').textContent = '₹' + result;
+}
+
+// ── ADMIN REVENUE ──
+function renderRevenue(mc) {
+  mc.innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📊</div>
+      <div><div class="section-title">Revenue & Monetization</div><div class="section-sub">Platform earnings — Phase 1 estimates</div></div>
+    </div>
+    <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px">
+      <div class="rev-card"><div style="font-size:24px;margin-bottom:8px">💸</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">Transaction Fees (10%)</div><div class="rev-amount">₹3,200/day</div></div>
+      <div class="rev-card"><div style="font-size:24px;margin-bottom:8px">🚛</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">Logistics Margin</div><div class="rev-amount">₹1,800/day</div></div>
+      <div class="rev-card"><div style="font-size:24px;margin-bottom:8px">🏭</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">Hub Processing Fee</div><div class="rev-amount">₹2,400/day</div></div>
+      <div class="rev-card"><div style="font-size:24px;margin-bottom:8px">🌱</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">Carbon Credits</div><div class="rev-amount">₹850/day</div></div>
+      <div class="rev-card"><div style="font-size:24px;margin-bottom:8px">📋</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">ESG Subscription</div><div class="rev-amount">₹500/day</div></div>
+    </div>
+    <div style="background:var(--green-light);border:1.5px solid #86efac;border-radius:14px;padding:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+      <div><div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:1px">DAILY REVENUE</div><div style="font-family:var(--mono);font-size:32px;font-weight:700;color:var(--green)">₹8,750</div><div style="font-size:12px;color:var(--text-muted)">~18 tonnes/day · Phase 1 baseline</div></div>
+      <div style="text-align:right"><div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:1px">MONTHLY</div><div style="font-family:var(--mono);font-size:24px;font-weight:700;color:var(--amber)">₹2.6L</div><div style="font-size:12px;color:var(--text-muted)">To be refined in Phase 2</div></div>
+    </div>
+  </div>`;
+}
+
+// ── ADMIN LOGS ──
+async function renderLogs(mc) {
+  mc.innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🗂️</div>
+      <div><div class="section-title">Activity Logs</div><div class="section-sub">All vendor & collector actions — Admin only</div></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="log-table">
+        <thead><tr><th>TIME</th><th>ROLE</th><th>EMAIL</th><th>ACTION</th><th>DETAIL</th></tr></thead>
+        <tbody id="log-tbody">
+          <tr><td style="color:var(--text-muted);font-size:12px;font-family:var(--mono)">Loading...</td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+  await loadLogs();
+}
+
+async function loadLogs() {
+  const tbody = document.getElementById('log-tbody');
+  if (!tbody) return;
+
+  // Read from localStorage (populated by real usage + demo seed)
+  let logs = window.dbRead('activity_logs');
+
+  // Seed demo logs if empty
+  if (logs.length === 0) {
+    const demos = [
+      { timestamp:'2026-03-17T09:12:00', role:'vendor',    email:'vendor1@gmail.com',    type:'registration',    detail:'New vendor registered' },
+      { timestamp:'2026-03-17T09:45:00', role:'vendor',    email:'vendor1@gmail.com',    type:'pickup_request',  detail:'Koyambedu – 850kg, est. ₹1,020' },
+      { timestamp:'2026-03-17T10:03:00', role:'collector', email:'collector1@gmail.com', type:'registration',    detail:'New collector registered' },
+      { timestamp:'2026-03-17T10:22:00', role:'collector', email:'collector1@gmail.com', type:'pickup_accepted', detail:'Collector accepted Koyambedu pickup' },
+      { timestamp:'2026-03-17T11:40:00', role:'vendor',    email:'vendor2@gmail.com',    type:'pickup_request',  detail:'Tambaram – 620kg, est. ₹744' },
+    ];
+    demos.forEach(d => { const k='ch4_activity_logs'; const e=JSON.parse(localStorage.getItem(k)||'[]'); e.push(d); localStorage.setItem(k,JSON.stringify(e)); });
+    logs = window.dbRead('activity_logs');
+  }
+
+  const rows = logs.map(l => {
+    const ts = l.timestamp ? new Date(l.timestamp).toLocaleString('en-IN', {dateStyle:'short',timeStyle:'short'}) : 'Recent';
+    return `<tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">${ts}</td>
+      <td><span class="badge ${l.role==='vendor'?'badge-green':'badge-blue'}">${(l.role||'').toUpperCase()}</span></td>
+      <td style="font-size:13px">${l.email||''}</td>
+      <td style="font-family:var(--mono);font-size:12px">${l.type||''}</td>
+      <td style="font-size:13px;color:var(--text-muted)">${l.detail||''}</td>
+    </tr>`;
+  }).join('');
+
+  tbody.innerHTML = rows || '<tr><td colspan="5" style="color:var(--text-muted);padding:20px;text-align:center">No activity yet</td></tr>';
+}
+
+// ══════════════════════════════════════
+//   HELPERS
+// ══════════════════════════════════════
+async function logActivity(type, detail) {
+  if (!currentUser) return;
+  try {
+    await window.dbWrite('activity_logs', { type, detail, role:currentUser.role, email:currentUser.email });
+  } catch(e) {}
+}
+
+async function deleteAccount() {
+  if (!confirm('Delete your account? All your data will be removed. Activity logs will be kept for admin records.')) return;
+  try {
+    window.dbDelete('users', currentUser.email);
+    await logActivity('account_deleted','User deleted their account');
+    showToast('Account Deleted 🗑','Your account has been removed.','red');
+    setTimeout(() => logout(), 1500);
+  } catch(e) {
+    showToast('Error','Could not delete. Try again.','red');
+  }
+}
+
+// ── LIVE FEED (auto ticks) ──
+const feedEvents = [
+  { c:'green',  t:'🏪 <strong>Kotturpuram Market</strong> submitted a new pickup — 450 kg' },
+  { c:'amber',  t:'🚛 <strong>Collector Priya S.</strong> completed Koyambedu pickup — 850 kg' },
+  { c:'blue',   t:'🏭 <strong>Perungudi Hub</strong> dispatched 3.5t to Chennai Bio-CNG' },
+  { c:'green',  t:'💰 <strong>₹1,020 payment</strong> released — Koyambedu vendor' },
+  { c:'amber',  t:'📊 <strong>TN Compost Co.</strong> updated demand to 12t/day' },
+  { c:'green',  t:'🌱 <strong>Carbon credit logged</strong> — 2.3 tCO₂e offset today' },
+];
+let feedIdx = 0;
+
+function startLiveFeed() {
+  setInterval(() => {
+    const ev = feedEvents[feedIdx % feedEvents.length]; feedIdx++;
+    // Update admin feed if visible
+    const af = document.getElementById('admin-feed');
+    if (af) {
+      const item = document.createElement('div');
+      item.className = 'feed-item';
+      item.innerHTML = `<div class="feed-dot ${ev.c}"></div><div class="feed-text">${ev.t}</div><div class="feed-time">just now</div>`;
+      af.prepend(item);
+      while (af.children.length > 8) af.removeChild(af.lastChild);
+    }
+    // Tick stats
+    const kgEl = document.getElementById('stat-kg');
+    if (kgEl) { const v = parseInt(kgEl.textContent.replace(',','')); kgEl.textContent = (v + Math.floor(Math.random()*40+10)).toLocaleString(); }
+  }, 9000);
+}
+
+// ── TOAST ──
+function showToast(title, msg, type) {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type==='amber'?' amber':type==='red'?' red-t':'');
+  t.innerHTML = `<div class="toast-title">${title}</div>${msg}`;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 4200);
+}
+
+// INIT PRICE CALC
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => showToast('CH4 Logistics 🟢','Chennai wet waste platform ready.','green'), 800);
+});
+</script>
+</body>
+</html>
